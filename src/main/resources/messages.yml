@@ -1,0 +1,56 @@
+system:
+  player-only: "<red>只有在線玩家能使用這個指令。</red>"
+  prefix: "<color:#f9a8d4>[花域]</color> "
+
+claim:
+  gp-missing: "<red>領地系統 (GriefPrevention) 未安裝或未啟用。</red>"
+  not-in-claim: "<yellow>你目前沒有站在任何花域內。</yellow>"
+  not-owner: "<red>你不是這塊花域的主人，沒有權限修改設定。</red>"
+  save-failed: "<red>花域設定儲存失敗，請回報管理員。</red>"
+
+tnt:
+  allowed: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>允許</bold></color> TNT 爆炸破壞方塊。</color>"
+  blocked: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>禁止</bold></color> TNT 爆炸破壞方塊。</color>"
+  status-on: "<color:#f5f5f5>花域 <color:#6fd8e8>#{claimId}</color> 的 TNT 爆炸目前為：<color:#6fd8e8><bold>允許破壞</bold></color></color>"
+  status-off: "<color:#f5f5f5>花域 <color:#6fd8e8>#{claimId}</color> 的 TNT 爆炸目前為：<color:#a8a8a8><bold>受到保護 (禁止破壞)</bold></color></color>"
+  toggled-by-admin: "<color:#a8a8a8>[管理員 {admin} 將花域 #{claimId} 的 TNT 設定改為 {state}]</color>"
+
+pvp:
+  allowed: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>開放</bold></color> PVP 對戰，請注意安全！</color>"
+  blocked: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>關閉</bold></color> PVP 對戰，恢復領地保護。</color>"
+
+mobs:
+  category-on: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>禁止</bold></color>生成 {label}。</color>"
+  category-off: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>恢復</bold></color>生成 {label}。</color>"
+  menu-header: "<color:#f9a8d4><bold>花域生物生成開關</bold></color><color:#a8a8a8> (點擊或 /cmob <類別> 切換)</color>"
+  menu-line: "  <click:run_command:/cmob {cmd}><hover:show_text:'<gray>點擊切換 {label}</gray>'>{state} <color:#f5f5f5>{label}</color> <color:#6fd8e8>[/cmob {cmd}]</color></hover></click>"
+  state-on: "<color:#6fd8e8>[已禁止]</color>"
+  state-off: "<color:#a8a8a8>[自然生成]</color>"
+  menu-hint: "<color:#a8a8a8>※ 只影響自然生成的生物，生怪磚/生怪蛋/繁殖/指令不受影響。</color>"
+  cat-hostile: "一般敵對(殭屍/骷髏/苦力怕)"
+  cat-raider: "掠奪者巡邏與襲擊"
+  cat-phantom: "夜魅"
+  cat-slime: "黏液怪與岩漿怪"
+  cat-ambient: "蝙蝠"
+
+claim-info:
+  wilderness: "<yellow>你目前站在野外（無主荒野）。</yellow>"
+  admin-claim: "<color:#f9a8d4><bold>管理員花域</bold></color> <color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
+  owned: "<color:#f9a8d4><bold>{owner}</bold></color><color:#f5f5f5> 的花域</color> <color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
+  actions: "  <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>點擊瞬間傳送至此花域中心</gray>'><color:#6fd8e8><bold>[傳送至此花域]</bold></color></hover></click>   <click:run_command:/csettings><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#f9a8d4><bold>[開啟設定選單]</bold></color></hover></click>"
+  open-gui: "<click:run_command:/csettings><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#6fd8e8><bold>[點此開啟花域設定選單]</bold></color></hover></click>"
+
+teleport:
+  success: "<color:#f9a8d4>❀ 已傳送至花域 <color:#6fd8e8>#{claimId}</color> 中心安全位置 <color:#a8a8a8>({x}, {y}, {z})</color></color>"
+  no-permission: "<red>你不是這塊花域的地主或信任成員，無法傳送至此。</red>"
+  no-claims: "<yellow>你目前沒有擁有任何花域。</yellow>"
+  multiple-claims-hint: "<color:#a8a8a8>你擁有多塊花域，可使用 <color:#6fd8e8>/claimtp <編號></color> 傳送至特定花域：{claims}</color>"
+  invalid-id: "<red>請輸入正確的花域編號，例如 /claimtp 1</red>"
+  claim-not-found: "<red>找不到編號為 #{claimId} 的花域。</red>"
+  failed: "<red>傳送失敗，目標花域可能處於不安全區域。</red>"
+
+gui:
+  title: "花域設定 #{claimId}"
+  admin-title: "花域設定 (管理員) #{claimId}"
+  no-permission: "<red>你沒有權限修改這塊花域的設定。</red>"
+  toggled: "<color:#f5f5f5>已將 <color:#6fd8e8>{setting}</color> 切換為：{state}</color>"

@@ -1,0 +1,15 @@
+# GriefPreventionAddon 設定檔
+# 領地 TNT 控制、開關設定與 GUI 管理
+
+tnt:
+  # 領地 TNT 預設是否允許破壞方塊(預設 false 確保既有領地安全)
+  default-allowed: false
+
+pvp:
+  # 領地 PVP 預設是否開啟(預設 false 由 GriefPrevention 保護)
+  default-allowed: false
+
+migration:
+  # 啟動時是否自動從 LycoServerTweaks/data.db 遷移舊 claim_toggle 資料
+  auto-migrate-lst: true
+  lst-db-path: "../LycoServerTweaks/data.db"

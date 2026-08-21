@@ -1,0 +1,13 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+
+# IDE
+.idea/
+*.iml
+out/
+
+# Logs & temp
+*.log
+

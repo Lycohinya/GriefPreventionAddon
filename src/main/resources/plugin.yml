@@ -1,0 +1,73 @@
+name: GriefPreventionAddon
+description: $description
+prefix: GriefPreventionAddon
+version: '${version}'
+
+main: com.tinyyana.griefPreventionAddon.GriefPreventionAddonPlugin
+api-version: '26.2'
+load: POSTWORLD
+
+folia-supported: true
+
+authors: [ TinyYana ]
+website: https://tinyyana.com
+
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.20-Beta1
+
+depend: [ LycoLib ]
+softdepend: [ GriefPrevention ]
+
+commands:
+  ctnt:
+    description: 開關或查看目前花域的 TNT 爆炸方塊破壞
+    aliases: [ claimtnt ]
+    usage: /ctnt [on|off|status]
+  csettings:
+    description: 開啟目前花域的設定選單
+    aliases: [ claimsettings, cmenu, claimgui ]
+    usage: /csettings
+  pvpinclaim:
+    description: 開關自己花域內的 PVP(地主限定,選單顯示 /pvp)
+    aliases: [ pvp, cpvp, pvpc ]
+    usage: /pvp
+  claimmobs:
+    description: 開啟花域的生物生成開關選單(一般敵對/掠奪者/夜魅/黏液怪/蝙蝠)
+    aliases: [ cmob ]
+    usage: /cmob [hostile|raider|phantom|slime|ambient]
+  claiminfo:
+    description: 查詢目前站的位置屬於誰的花域與設定
+    usage: /claiminfo
+  claimtp:
+    description: 傳送至指定花域或自己擁有的花域中心安全位置
+    aliases: [ ctp, claimteleport ]
+    usage: /claimtp [編號]
+
+permissions:
+  griefpreventionaddon.user:
+    description: 基礎花域設定與查詢權限(限自己的花域)
+    default: true
+  griefpreventionaddon.tnt:
+    description: 使用 /ctnt 切換自己花域的 TNT 開關
+    default: true
+  griefpreventionaddon.tnt.others:
+    description: 切換非自己花域的 TNT 開關
+    default: op
+  griefpreventionaddon.tnt.view:
+    description: 查看任何花域的 TNT 狀態
+    default: true
+  griefpreventionaddon.tp:
+    description: 傳送至自己擁有的花域
+    default: true
+  griefpreventionaddon.tp.others:
+    description: 傳送至他人花域
+    default: op
+  griefpreventionaddon.tp.admin:
+    description: 傳送至管理員花域
+    default: op
+  griefpreventionaddon.settings.others:
+    description: 於 GUI 或指令中修改非自己花域的設定
+    default: op
+  griefpreventionaddon.admin:
+    description: 管理員全權限(管理任何花域、查看診斷)
+    default: op
