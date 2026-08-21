@@ -26,6 +26,8 @@ class ClaimSettingsGuiService(
 
         const val HEADER_SLOT = 0
         const val TELEPORT_SLOT = 1
+        const val RENAME_SLOT = 2
+        const val ADMIN_PANEL_SLOT = 3
 
         const val TNT_SLOT = 9
         const val PVP_SLOT = 10
@@ -87,12 +89,20 @@ class ClaimSettingsGuiService(
         // 1. Context Band: 狀態卡 (Slot 0)
         val typeStr = if (info.isAdminClaim) "管理員花域" else (if (info.isSubdivision) "子花域" else "一般花域")
         val ownerStr = info.ownerName ?: "管理員 / 公共"
+        val alias = store.getAlias(holder.claimId)
+        val aliasDisplay = if (!alias.isNullOrBlank()) "「$alias」" else null
+        val titleText = if (aliasDisplay != null) {
+            "<color:#ff8fc4><bold>花域狀態: $alias</bold></color> <color:#a8a8a8>#${holder.claimId}</color>"
+        } else {
+            "<color:#ff8fc4><bold>花域狀態</bold></color> <color:#a8a8a8>#${holder.claimId}</color>"
+        }
         val headerLore = mutableListOf(
             "<gray>你目前所在的花域領地詳細資料</gray>",
             "",
             "<dark_gray>地主</dark_gray> <color:#f5f5f5>$ownerStr</color>",
+            "<dark_gray>別名</dark_gray> " + if (aliasDisplay != null) "<color:#ffd166>$alias</color>" else "<color:#a8a8a8>未設定 (輸入 /cname 設定)</color>",
             "<dark_gray>尺寸</dark_gray> <color:#f5f5f5>${info.width} × ${info.height}</color> <color:#a8a8a8>(${info.area} 格)</color>",
-            "<dark_gray>中心</dark_gray> <color:#a8a8a8>${safeLoc.world.name} (${safeLoc.blockX}, ${safeLoc.blockZ})</color>",
+            "<dark_gray>中心</dark_gray> <color:#a8a8a8>${safeLoc.world?.name ?: "world"} (${safeLoc.blockX}, ${safeLoc.blockZ})</color>",
             "<dark_gray>類型</dark_gray> <color:#f5f5f5>$typeStr</color>",
         )
         if (holder.isAdminViewer) {
@@ -104,7 +114,7 @@ class ClaimSettingsGuiService(
             inventory = inv,
             slot = HEADER_SLOT,
             iconId = "claim",
-            name = "<color:#ff8fc4><bold>花域狀態</bold></color> <color:#a8a8a8>#${holder.claimId}</color>",
+            name = titleText,
             lore = headerLore,
             fallback = Material.GOLDEN_SHOVEL,
         )
@@ -113,7 +123,8 @@ class ClaimSettingsGuiService(
         val teleportLore = listOf(
             "<gray>點擊瞬間傳送至此花域的中心安全地面</gray>",
             "",
-            "<dark_gray>目的地</dark_gray> <color:#6fd8e8>${safeLoc.blockX}, ${safeLoc.blockY}, ${safeLoc.blockZ}</color>",
+            "<dark_gray>目標</dark_gray> <color:#6fd8e8>${aliasDisplay ?: "#${holder.claimId}"}</color>",
+            "<dark_gray>座標</dark_gray> <color:#a8a8a8>(${safeLoc.world?.name ?: "world"} ${safeLoc.blockX}, ${safeLoc.blockZ})</color>",
             "",
             "<yellow><bold>左鍵</bold></yellow><white> 立即傳送</white>",
         )
@@ -127,7 +138,47 @@ class ClaimSettingsGuiService(
             glint = true,
         )
 
-        // 3. 各功能開關卡片 (Row 1 & Row 2)
+        // 3. Context Band: 設定別名行動 (Slot 2)
+        val renameLore = listOf(
+            "<gray>為這塊花域設定好記的名字（如主家、農場、商店）</gray>",
+            "",
+            "<dark_gray>目前別名</dark_gray> " + if (aliasDisplay != null) "<color:#ffd166>$alias</color>" else "<color:#a8a8a8>未設定 (預設 #${holder.claimId})</color>",
+            "<dark_gray>命名好處</dark_gray> <color:#6fd8e8>之後可直接輸入 /ctp <別名> 傳送！</color>",
+            "<dark_gray>格式限制</dark_gray> <color:#a8a8a8>1~20 字元，支援中英文、數字、底線</color>",
+            "",
+            "<yellow><bold>左鍵</bold></yellow><white> 點擊關閉選單並在聊天框輸入 /cname</white>",
+        )
+        builder.placeIcon(
+            inventory = inv,
+            slot = RENAME_SLOT,
+            iconId = "name_tag",
+            name = "<color:#ffd166><bold>設定花域別名 (改名)</bold></color>",
+            lore = renameLore,
+            fallback = Material.NAME_TAG,
+            glint = aliasDisplay != null,
+        )
+
+        // 4. Context Band: 管理員捷徑 (Slot 3, 僅管理員檢視模式顯示)
+        if (holder.isAdminViewer) {
+            val adminLore = listOf(
+                "<gray>以管理員身分管理與檢視伺服器所有花域</gray>",
+                "",
+                "<dark_gray>地主 UUID</dark_gray> <color:#a8a8a8>${holder.ownerUuid ?: "管理員領地"}</color>",
+                "<dark_gray>全服管理</dark_gray> <color:#6fd8e8>開啟全伺服器花域管理面板 (/cadmin)</color>",
+                "",
+                "<yellow><bold>左鍵</bold></yellow><white> 開啟全伺服器花域管理面板</white>",
+            )
+            builder.placeIcon(
+                inventory = inv,
+                slot = ADMIN_PANEL_SLOT,
+                iconId = "admin",
+                name = "<color:#fca5a5><bold>全服花域管理面板</bold></color>",
+                lore = adminLore,
+                fallback = Material.BEACON,
+            )
+        }
+
+        // 5. 各功能開關卡片 (Row 1 & Row 2)
         slotToSetting.forEach { (slot, def) ->
             val enabled = def.isEnabled(store, holder.claimId)
             val stateText = if (enabled) def.enabledLabel else def.disabledLabel
@@ -165,7 +216,7 @@ class ClaimSettingsGuiService(
                 "<gray>領地設定會即時套用於整塊花域</gray>",
                 "",
                 "<dark_gray>權限</dark_gray> <white>僅地主或管理員可變更設定</white>",
-                "<dark_gray>快捷</dark_gray> <white>可用 /ctnt、/pvp、/cmob 指令</white>",
+                "<dark_gray>快捷</dark_gray> <white>可用 /ctp、/cname、/ctnt、/pvp、/cmob</white>",
             ),
             fallback = Material.KNOWLEDGE_BOOK,
         )

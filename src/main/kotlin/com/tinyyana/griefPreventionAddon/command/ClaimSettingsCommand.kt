@@ -2,16 +2,17 @@ package com.tinyyana.griefPreventionAddon.command
 
 import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiService
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
+import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.lycoLib.config.Messages
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
-import org.bukkit.entity.Player
-
 import org.bukkit.command.TabCompleter
+import org.bukkit.entity.Player
 
 class ClaimSettingsCommand(
     private val bridge: GriefPreventionBridge,
+    private val store: ClaimSettingsStore,
     private val guiService: ClaimSettingsGuiService,
     private val messages: Messages,
 ) : CommandExecutor, TabCompleter {
@@ -31,15 +32,18 @@ class ClaimSettingsCommand(
             player.hasPermission("griefpreventionaddon.admin") ||
             player.isOp
 
+        val playerClaims = bridge.getClaimsForPlayer(player.uniqueId)
+
         val claim = if (args.isNotEmpty()) {
-            val claimId = args[0].toLongOrNull()
+            val input = args[0]
+            val claimId = store.findClaimId(input, player.uniqueId, playerClaims)
             if (claimId == null) {
-                player.sendMessage(messages.get("claim.not-in-claim"))
+                player.sendMessage(messages.get("teleport.invalid-target", "target" to input))
                 return true
             }
             val target = bridge.getClaim(claimId)
             if (target == null) {
-                player.sendMessage(messages.get("teleport.claim-not-found", "id" to claimId.toString()))
+                player.sendMessage(messages.get("teleport.claim-not-found", "claimId" to claimId.toString()))
                 return true
             }
             target
@@ -48,7 +52,6 @@ class ClaimSettingsCommand(
             if (locClaim != null) {
                 locClaim
             } else {
-                val playerClaims = bridge.getClaimsForPlayer(player.uniqueId)
                 if (playerClaims.size == 1) {
                     playerClaims.first()
                 } else {
@@ -77,10 +80,17 @@ class ClaimSettingsCommand(
         args: Array<out String>,
     ): List<String> {
         if (args.size == 1 && sender is Player) {
-            val query = args[0].lowercase()
-            return bridge.getClaimsForPlayer(sender.uniqueId)
-                .map { it.id.toString() }
-                .filter { it.startsWith(query) }
+            val playerClaims = bridge.getClaimsForPlayer(sender.uniqueId)
+            val suggestions = mutableListOf<String>()
+            for (c in playerClaims) {
+                val id = c.id ?: continue
+                val name = store.getAlias(id)
+                if (!name.isNullOrBlank()) {
+                    suggestions.add(name)
+                }
+                suggestions.add(id.toString())
+            }
+            return suggestions.filter { it.startsWith(args[0], ignoreCase = true) }
         }
         return emptyList()
     }

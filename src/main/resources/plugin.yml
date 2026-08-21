@@ -41,7 +41,20 @@ commands:
   claimtp:
     description: 傳送至指定花域或自己擁有的花域中心安全位置
     aliases: [ ctp, claimteleport ]
-    usage: /claimtp [編號]
+    usage: /claimtp [別名|編號]
+  claimname:
+    description: 設定或清除目前花域的自訂別名(中英皆可)
+    aliases: [ cname, claimalias, calias ]
+    usage: /cname [別名|clear]
+  claimslist:
+    description: 列出自己名下的全部花域與別名，附點擊傳送捷徑
+    aliases: [ claims, myclaims ]
+    usage: /claimslist
+  claimadmin:
+    description: 全伺服器花域管理面板與管理員工具
+    aliases: [ cadmin, cmanage ]
+    permission: griefpreventionaddon.admin
+    usage: /cadmin [list|tp|delete|name|set|help]
 
 permissions:
   griefpreventionaddon.user:

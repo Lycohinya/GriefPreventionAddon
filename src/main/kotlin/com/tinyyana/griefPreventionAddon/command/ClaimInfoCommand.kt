@@ -1,6 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
+import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.lycoLib.config.Messages
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -9,6 +10,7 @@ import org.bukkit.entity.Player
 
 class ClaimInfoCommand(
     private val bridge: GriefPreventionBridge,
+    private val store: ClaimSettingsStore,
     private val messages: Messages,
 ) : CommandExecutor {
 
@@ -29,10 +31,15 @@ class ClaimInfoCommand(
             return true
         }
 
+        val alias = store.getAlias(info.claimId)
+        val aliasText = if (!alias.isNullOrBlank()) "「$alias」 " else ""
+
         if (info.isAdminClaim) {
             player.sendMessage(
                 messages.get(
                     "claim-info.admin-claim",
+                    "claimId" to info.claimId.toString(),
+                    "alias" to aliasText,
                     "width" to info.width.toString(),
                     "height" to info.height.toString(),
                     "area" to info.area.toString(),
@@ -43,6 +50,8 @@ class ClaimInfoCommand(
                 messages.get(
                     "claim-info.owned",
                     "owner" to (info.ownerName ?: "未知"),
+                    "claimId" to info.claimId.toString(),
+                    "alias" to aliasText,
                     "width" to info.width.toString(),
                     "height" to info.height.toString(),
                     "area" to info.area.toString(),

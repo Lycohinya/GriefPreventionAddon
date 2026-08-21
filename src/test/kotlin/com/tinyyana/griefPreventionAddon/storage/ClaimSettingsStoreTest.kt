@@ -108,4 +108,46 @@ class ClaimSettingsStoreTest {
         assertTrue(store.isMobSpawnBlocked(ClaimSettingsKeys.NO_PHANTOM_SPAWN, 102L))
         assertFalse(store.isTntAllowed(101L)) // TNT 仍維持預設安全值 false
     }
+
+    @Test
+    fun `alias CRUD and findClaimId support`() {
+        // 初始狀態無別名
+        assertEquals(null, store.getAlias(100L))
+
+        // 設定別名
+        store.setAlias(100L, "主家")
+        store.setAlias(200L, "MyFarm")
+
+        assertEquals("主家", store.getAlias(100L))
+        assertEquals("MyFarm", store.getAlias(200L))
+
+        // 純數字與 # 編號查找
+        assertEquals(100L, store.findClaimId("100", null, emptyList()))
+        assertEquals(100L, store.findClaimId("#100", null, emptyList()))
+
+        // 別名查找 (大小寫不拘)
+        assertEquals(100L, store.findClaimId("主家", null, emptyList()))
+        assertEquals(200L, store.findClaimId("myfarm", null, emptyList()))
+        assertEquals(200L, store.findClaimId("MYFARM", null, emptyList()))
+
+        // 重新連線後別名依然存在
+        db.close()
+        val newDb = Db(dbFile)
+        val newStore = ClaimSettingsStore(newDb)
+        newStore.init()
+
+        assertEquals("主家", newStore.getAlias(100L))
+        assertEquals("MyFarm", newStore.getAlias(200L))
+
+        // 清除別名
+        newStore.setAlias(100L, null)
+        assertEquals(null, newStore.getAlias(100L))
+        assertEquals(null, newStore.findClaimId("主家", null, emptyList()))
+
+        // purgeClaim 也會清除別名
+        newStore.purgeClaim(200L)
+        assertEquals(null, newStore.getAlias(200L))
+
+        newDb.close()
+    }
 }

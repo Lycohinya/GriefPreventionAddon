@@ -1,14 +1,18 @@
 package com.tinyyana.griefPreventionAddon.teleport
 
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
+import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.lycoLib.audit.AuditLog
 import com.tinyyana.lycoLib.config.Messages
 import me.ryanhamshire.GriefPrevention.Claim
+import org.bukkit.Location
 import org.bukkit.Sound
+import org.bukkit.World
 import org.bukkit.entity.Player
 
 class ClaimTeleportService(
     private val bridge: GriefPreventionBridge,
+    private val store: ClaimSettingsStore,
     private val messages: Messages,
 ) {
 
@@ -40,36 +44,91 @@ class ClaimTeleportService(
             return
         }
 
-        val claimId = top.id ?: return
-        val targetLoc = bridge.getSafeTeleportLocation(top)
-        targetLoc.yaw = player.location.yaw
-        targetLoc.pitch = player.location.pitch
+        val claimId = top.id ?: run {
+            player.sendMessage(messages.get("teleport.failed"))
+            return
+        }
+
+        val lesser = top.lesserBoundaryCorner ?: run {
+            player.sendMessage(messages.get("teleport.failed"))
+            return
+        }
+        val greater = top.greaterBoundaryCorner ?: run {
+            player.sendMessage(messages.get("teleport.failed"))
+            return
+        }
+        val world = lesser.world ?: run {
+            player.sendMessage(messages.get("teleport.failed"))
+            return
+        }
+
+        val centerX = (lesser.blockX + greater.blockX) / 2
+        val centerZ = (lesser.blockZ + greater.blockZ) / 2
+        val chunkX = centerX shr 4
+        val chunkZ = centerZ shr 4
 
         if (closeInventory) {
             player.closeInventory()
         }
 
-        player.teleportAsync(targetLoc).thenAccept { success ->
-            if (success) {
-                player.playSound(targetLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f)
-                player.sendMessage(
-                    messages.get(
-                        "teleport.success",
-                        "claimId" to claimId.toString(),
-                        "x" to targetLoc.blockX.toString(),
-                        "y" to targetLoc.blockY.toString(),
-                        "z" to targetLoc.blockZ.toString(),
-                    ),
-                )
-                AuditLog.log(
-                    "GriefPreventionAddon",
-                    player.name,
-                    "claim-tp",
-                    "claim=$claimId dest=(${targetLoc.blockX},${targetLoc.blockY},${targetLoc.blockZ})",
-                )
-            } else {
-                player.sendMessage(messages.get("teleport.failed"))
+        val plugin = bridge.plugin
+
+        val doTeleport = Runnable {
+            val safeY = resolveSafeGroundY(world, centerX, centerZ, lesser.blockY)
+            val targetLoc = Location(
+                world,
+                centerX + 0.5,
+                safeY.toDouble(),
+                centerZ + 0.5,
+                player.location.yaw,
+                player.location.pitch,
+            )
+
+            player.teleportAsync(targetLoc).thenAccept { success ->
+                if (success) {
+                    player.playSound(targetLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f)
+                    val alias = store.getAlias(claimId)
+                    val displayName = if (!alias.isNullOrBlank()) "「$alias」" else "#$claimId"
+                    player.sendMessage(
+                        messages.get(
+                            "teleport.success",
+                            "name" to displayName,
+                            "claimId" to claimId.toString(),
+                            "x" to targetLoc.blockX.toString(),
+                            "y" to targetLoc.blockY.toString(),
+                            "z" to targetLoc.blockZ.toString(),
+                        ),
+                    )
+                    AuditLog.log(
+                        "GriefPreventionAddon",
+                        player.name,
+                        "claim-tp",
+                        "claim=$claimId dest=(${targetLoc.blockX},${targetLoc.blockY},${targetLoc.blockZ})",
+                    )
+                } else {
+                    player.sendMessage(messages.get("teleport.failed"))
+                }
             }
+        }
+
+        try {
+            plugin.server.regionScheduler.execute(plugin, world, chunkX, chunkZ, doTeleport)
+        } catch (t: Throwable) {
+            // 非 Folia 或測試環境降級執行
+            doTeleport.run()
+        }
+    }
+
+    private fun resolveSafeGroundY(world: World, x: Int, z: Int, fallbackY: Int): Int {
+        return try {
+            val highest = world.getHighestBlockYAt(x, z)
+            if (highest <= world.minHeight) {
+                if (fallbackY > world.minHeight) fallbackY else 64
+            } else {
+                highest + 1
+            }
+        } catch (e: Throwable) {
+            if (fallbackY > world.minHeight) fallbackY else 64
         }
     }
 }

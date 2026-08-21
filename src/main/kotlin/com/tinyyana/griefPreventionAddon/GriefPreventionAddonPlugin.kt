@@ -7,6 +7,7 @@ import com.tinyyana.griefPreventionAddon.command.ClaimPvpCommand
 import com.tinyyana.griefPreventionAddon.command.ClaimSettingsCommand
 import com.tinyyana.griefPreventionAddon.command.ClaimTntCommand
 import com.tinyyana.griefPreventionAddon.command.ClaimTpCommand
+import com.tinyyana.griefPreventionAddon.gui.ClaimAdminListGuiService
 import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiListener
 import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiService
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
@@ -34,6 +35,9 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
     lateinit var guiService: ClaimSettingsGuiService
         private set
 
+    lateinit var adminGuiService: ClaimAdminListGuiService
+        private set
+
     override fun onEnable() {
         saveDefaultConfig()
         messages = Messages.load(this)
@@ -51,8 +55,9 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
         }
 
         griefPreventionBridge = GriefPreventionBridge(this)
-        claimTeleportService = ClaimTeleportService(griefPreventionBridge, messages)
+        claimTeleportService = ClaimTeleportService(griefPreventionBridge, claimSettingsStore, messages)
         guiService = ClaimSettingsGuiService(griefPreventionBridge, claimSettingsStore, messages)
+        adminGuiService = ClaimAdminListGuiService(griefPreventionBridge, claimSettingsStore, messages)
 
         // 註冊監聽器
         val pm = server.pluginManager
@@ -62,8 +67,19 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
         pm.registerEvents(
             ClaimSettingsGuiListener(
                 guiService = guiService,
+                adminGuiService = adminGuiService,
                 bridge = griefPreventionBridge,
                 store = claimSettingsStore,
+                teleportService = claimTeleportService,
+                messages = messages,
+            ),
+            this,
+        )
+        pm.registerEvents(
+            com.tinyyana.griefPreventionAddon.gui.ClaimAdminGuiListener(
+                adminGuiService = adminGuiService,
+                settingsGuiService = guiService,
+                bridge = griefPreventionBridge,
                 teleportService = claimTeleportService,
                 messages = messages,
             ),
@@ -77,7 +93,7 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
             it.tabCompleter = tntCmd
         }
 
-        val settingsCmd = ClaimSettingsCommand(griefPreventionBridge, guiService, messages)
+        val settingsCmd = ClaimSettingsCommand(griefPreventionBridge, claimSettingsStore, guiService, messages)
         getCommand("csettings")?.let {
             it.setExecutor(settingsCmd)
             it.tabCompleter = settingsCmd
@@ -92,13 +108,35 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
             it.tabCompleter = mobsCmd
         }
 
-        val infoCmd = ClaimInfoCommand(griefPreventionBridge, messages)
+        val infoCmd = ClaimInfoCommand(griefPreventionBridge, claimSettingsStore, messages)
         getCommand("claiminfo")?.setExecutor(infoCmd)
 
-        val tpCmd = ClaimTpCommand(griefPreventionBridge, claimTeleportService, messages)
+        val tpCmd = ClaimTpCommand(griefPreventionBridge, claimSettingsStore, claimTeleportService, messages)
         getCommand("claimtp")?.let {
             it.setExecutor(tpCmd)
             it.tabCompleter = tpCmd
+        }
+
+        val nameCmd = com.tinyyana.griefPreventionAddon.command.ClaimNameCommand(griefPreventionBridge, claimSettingsStore, messages)
+        getCommand("claimname")?.let {
+            it.setExecutor(nameCmd)
+            it.tabCompleter = nameCmd
+        }
+
+        val listCmd = com.tinyyana.griefPreventionAddon.command.ClaimsListCommand(griefPreventionBridge, claimSettingsStore, messages)
+        getCommand("claimslist")?.setExecutor(listCmd)
+
+        val adminCmd = com.tinyyana.griefPreventionAddon.command.ClaimAdminCommand(
+            bridge = griefPreventionBridge,
+            store = claimSettingsStore,
+            adminGuiService = adminGuiService,
+            settingsGuiService = guiService,
+            teleportService = claimTeleportService,
+            messages = messages,
+        )
+        getCommand("claimadmin")?.let {
+            it.setExecutor(adminCmd)
+            it.tabCompleter = adminCmd
         }
 
         logger.info("[GriefPreventionAddon] 插件已成功啟用 (版本: ${description.version})。")

@@ -19,6 +19,9 @@ object ClaimSettingsKeys {
     const val NO_SLIME_SPAWN = "no-slime-spawn"
     const val NO_AMBIENT_SPAWN = "no-ambient-spawn"
 
+    /** 領地別名(自訂名稱，支援中文與英數字) */
+    const val ALIAS = "alias"
+
     val ALL_KEYS = listOf(
         TNT,
         PVP,
@@ -27,6 +30,7 @@ object ClaimSettingsKeys {
         NO_PHANTOM_SPAWN,
         NO_SLIME_SPAWN,
         NO_AMBIENT_SPAWN,
+        ALIAS,
     )
 }
 
@@ -40,6 +44,9 @@ class ClaimSettingsStore(
 ) {
     /** key -> 啟用(true)該設定的 claimId 集合 */
     private val cache = ConcurrentHashMap<String, MutableSet<Long>>()
+
+    /** claimId -> 自訂別名 (支援中英文) */
+    private val aliasCache = ConcurrentHashMap<Long, String>()
 
     fun init() {
         db.tx { conn ->
@@ -62,13 +69,69 @@ class ClaimSettingsStore(
                         val claimId = rs.getLong("claim_id")
                         val key = rs.getString("setting_key")
                         val value = rs.getString("setting_value")
-                        if (value.equals("true", ignoreCase = true)) {
+                        if (key == ClaimSettingsKeys.ALIAS) {
+                            if (value.isNotBlank()) {
+                                aliasCache[claimId] = value
+                            }
+                        } else if (value.equals("true", ignoreCase = true)) {
                             cache.getOrPut(key) { ConcurrentHashMap.newKeySet() }.add(claimId)
                         }
                     }
                 }
             }
         }
+    }
+
+    /** 取得領地自訂別名 */
+    fun getAlias(claimId: Long): String? = aliasCache[claimId]
+
+    /** 設定或清除領地自訂別名(null 或空白代表清除) */
+    fun setAlias(claimId: Long, alias: String?) {
+        val cleanAlias = alias?.trim()?.takeIf { it.isNotBlank() }
+        val now = System.currentTimeMillis()
+        db.tx { conn ->
+            if (cleanAlias != null) {
+                val sql = "INSERT INTO claim_settings(claim_id, setting_key, setting_value, updated_at) VALUES (?, 'alias', ?, ?) " +
+                    "ON CONFLICT(claim_id, setting_key) DO UPDATE SET setting_value=excluded.setting_value, updated_at=excluded.updated_at"
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setLong(1, claimId)
+                    stmt.setString(2, cleanAlias)
+                    stmt.setLong(3, now)
+                    stmt.executeUpdate()
+                }
+                aliasCache[claimId] = cleanAlias
+            } else {
+                conn.prepareStatement("DELETE FROM claim_settings WHERE claim_id = ? AND setting_key = 'alias'").use { stmt ->
+                    stmt.setLong(1, claimId)
+                    stmt.executeUpdate()
+                }
+                aliasCache.remove(claimId)
+            }
+        }
+    }
+
+    /**
+     * 尋找領地 ID：優先解析編號（如 `123` 或 `#123`），次之比對玩家名下領地之自訂別名（不分大小寫）。
+     */
+    fun findClaimId(input: String, ownerUuid: java.util.UUID?, playerClaims: List<me.ryanhamshire.GriefPrevention.Claim>): Long? {
+        val trimmed = input.trim()
+        val numId = trimmed.removePrefix("#").toLongOrNull()
+        if (numId != null) {
+            return numId
+        }
+
+        // 1. 從玩家自身領地中比對別名
+        for (claim in playerClaims) {
+            val id = claim.id ?: continue
+            val alias = aliasCache[id]
+            if (alias != null && alias.equals(trimmed, ignoreCase = true)) {
+                return id
+            }
+        }
+
+        // 2. 全域別名反查(例如管理員操作或唯一別名)
+        val globalMatch = aliasCache.entries.firstOrNull { it.value.equals(trimmed, ignoreCase = true) }
+        return globalMatch?.key
     }
 
     /** 領地是否允許 TNT 破壞方塊(預設 false) */
@@ -143,6 +206,7 @@ class ClaimSettingsStore(
             }
         }
         cache.values.forEach { it.remove(claimId) }
+        aliasCache.remove(claimId)
     }
 
     /**

@@ -36,16 +36,34 @@ mobs:
 claim-info:
   wilderness: "<yellow>你目前站在野外（無主荒野）。</yellow>"
   admin-claim: "<color:#f9a8d4><bold>管理員花域</bold></color> <color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
-  owned: "<color:#f9a8d4><bold>{owner}</bold></color><color:#f5f5f5> 的花域</color> <color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
-  actions: "  <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>點擊瞬間傳送至此花域中心</gray>'><color:#6fd8e8><bold>[傳送至此花域]</bold></color></hover></click>   <click:run_command:/csettings><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#f9a8d4><bold>[開啟設定選單]</bold></color></hover></click>"
+  owned: "<color:#f9a8d4><bold>{owner}</bold></color><color:#f5f5f5> 的花域</color> {alias}<color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
+  actions: "  <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>點擊瞬間傳送至此花域中心</gray>'><color:#6fd8e8><bold>[傳送至此花域]</bold></color></hover></click>   <click:run_command:/csettings {claimId}><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#f9a8d4><bold>[開啟設定選單]</bold></color></hover></click>   <click:suggest_command:'/cname '><hover:show_text:'<gray>設定此花域的自訂別名 (中英皆可)</gray>'><color:#ffd166><bold>[設定別名]</bold></color></hover></click>"
   open-gui: "<click:run_command:/csettings><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#6fd8e8><bold>[點此開啟花域設定選單]</bold></color></hover></click>"
 
+name:
+  guide-header: "<color:#f9a8d4><bold>❀ 花域別名 (自訂名稱) 設定教學</bold></color>"
+  guide-current: "  <dark_gray>目前花域：</dark_gray><color:#ffd166>{name}</color> <color:#a8a8a8>(#{claimId})</color>"
+  guide-current-none: "  <dark_gray>目前所在：</dark_gray><color:#a8a8a8>無主荒野或非本人花域</color>"
+  guide-line-set: "  <click:suggest_command:'/cname '><hover:show_text:'<gray>點擊在聊天框填寫指令</gray>'><color:#6fd8e8><bold>[/cname <名稱>]</bold></color> <gray>設定目前花域的別名 (例：/cname 主家、/cname farm)</gray></hover></click>"
+  guide-line-clear: "  <click:run_command:'/cname clear'><hover:show_text:'<gray>點擊清除目前花域別名</gray>'><color:#fca5a5><bold>[/cname clear]</bold></color> <gray>清除目前花域的別名</gray></hover></click>"
+  guide-line-id: "  <click:suggest_command:'/cname 1 '><hover:show_text:'<gray>點擊在聊天框填寫指令</gray>'><color:#ffd166><bold>[/cname <編號> <名稱>]</bold></color> <gray>為指定編號的花域設定別名</gray></hover></click>"
+  guide-quick-prompt: "  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[點此填寫 /cname <新名稱>]</bold></color></click>   <click:suggest_command:'/cname 主家'><color:#ffd166>[/cname 主家]</color></click>   <click:suggest_command:'/cname 農場'><color:#ffd166>[/cname 農場]</color></click>   <click:run_command:'/claimslist'><color:#a8a8a8>[查看花域清單]</color></click>"
+  gui-prompt-header: "<color:#f9a8d4><bold>❀ 請在聊天框輸入欲設定的花域別名：</bold></color>"
+  gui-prompt-actions: "  目前花域：<color:#ffd166>{current}</color> (#{claimId})\n  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[點擊填寫 /cname <新別名>]</bold></color></click>   <click:suggest_command:'/cname 主家'><color:#ffd166>[主家]</color></click>   <click:suggest_command:'/cname 農場'><color:#ffd166>[農場]</color></click>   <click:run_command:'/cname clear'><color:#fca5a5>[清除別名]</color></click>"
+  set-success: "<color:#f9a8d4>❀ 成功將花域 <color:#6fd8e8>#{claimId}</color> 的別名設定為：<color:#ffd166><bold>「{name}」</bold></color></color>\n  👉 現在你可以隨時輸入 <click:run_command:'/ctp {name}'><hover:show_text:'<gray>點擊立即傳送</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click> 瞬間傳送回來！"
+  cleared: "<color:#f9a8d4>❀ 已清除花域 <color:#6fd8e8>#{claimId}</color> 的自訂別名（恢復使用編號 #{claimId}）。</color>"
+  invalid-name: "<red>無效的花域別名！長度需為 1-20 字元，不可為純數字或包含斜線、空格等特殊符號。</red>"
+  duplicate-name: "<red>你名下的另一塊花域 (#{otherId}) 已經使用了「{name}」這個別名！請使用不同名稱。</red>"
+  usage: "<yellow>用法：/cname <別名> 或 /cname clear (清除別名) 或 /cname <編號> <別名></yellow>"
+  list-header: "<color:#f9a8d4><bold>❀ 你的花域清單</bold></color><color:#a8a8a8> (點擊即可傳送)</color>"
+  list-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>點擊傳送至 {name}</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[傳送]</bold></color></hover></click>"
+
 teleport:
-  success: "<color:#f9a8d4>❀ 已傳送至花域 <color:#6fd8e8>#{claimId}</color> 中心安全位置 <color:#a8a8a8>({x}, {y}, {z})</color></color>"
+  success: "<color:#f9a8d4>❀ 已傳送至花域 <color:#ffd166><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId})</color> 中心安全位置 <color:#a8a8a8>({x}, {y}, {z})</color></color>"
   no-permission: "<red>你不是這塊花域的地主或信任成員，無法傳送至此。</red>"
   no-claims: "<yellow>你目前沒有擁有任何花域。</yellow>"
-  multiple-claims-hint: "<color:#a8a8a8>你擁有多塊花域，可使用 <color:#6fd8e8>/claimtp <編號></color> 傳送至特定花域：{claims}</color>"
-  invalid-id: "<red>請輸入正確的花域編號，例如 /claimtp 1</red>"
+  multiple-claims-hint: "<color:#a8a8a8>你擁有多塊花域，可使用 <color:#6fd8e8>/claimtp <名稱或編號></color> 傳送至特定花域：{claims}</color>"
+  invalid-target: "<red>找不到名為「{target}」或編號為 #{target} 的花域！輸入 /ctp 查看可用清單。</red>"
   claim-not-found: "<red>找不到編號為 #{claimId} 的花域。</red>"
   failed: "<red>傳送失敗，目標花域可能處於不安全區域。</red>"
 
@@ -54,3 +72,10 @@ gui:
   admin-title: "花域設定 (管理員) #{claimId}"
   no-permission: "<red>你沒有權限修改這塊花域的設定。</red>"
   toggled: "<color:#f5f5f5>已將 <color:#6fd8e8>{setting}</color> 切換為：{state}</color>"
+
+admin:
+  list-title: "全服花域管理面板 ({page}/{totalPages})"
+  no-claims: "<yellow>伺服器目前沒有任何已建立的花域。</yellow>"
+  claim-deleted: "<color:#fca5a5>已強制刪除花域 #{claimId} 並清除所有設定記錄。</color>"
+  teleported: "<color:#a8a8a8>[管理員模式] 已瞬間傳送至花域 #{claimId} 中心。</color>"
+  help: "<color:#f9a8d4><bold>管理員花域管理指令：</bold></color>\n  <color:#6fd8e8>/cadmin</color> <gray>開啟全服花域管理面板</gray>\n  <color:#6fd8e8>/cadmin list [玩家]</color> <gray>檢視特定玩家或全部花域</gray>\n  <color:#6fd8e8>/cadmin tp <編號|別名></color> <gray>強制傳送至任意花域</gray>\n  <color:#6fd8e8>/cadmin delete <編號></color> <gray>強制刪除指定花域</gray>"

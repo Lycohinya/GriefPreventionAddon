@@ -31,7 +31,7 @@ data class ClaimInfoResult(
  * 封裝 GriefPrevention API。
  * 執行期透過 softdepend 檢查防範 NoClassDefFoundError。
  */
-class GriefPreventionBridge(private val plugin: Plugin) {
+class GriefPreventionBridge(val plugin: Plugin) {
 
     fun isAvailable(): Boolean =
         plugin.server.pluginManager.getPlugin("GriefPrevention")?.isEnabled == true
@@ -112,16 +112,21 @@ class GriefPreventionBridge(private val plugin: Plugin) {
         }.getOrDefault(emptyList())
     }
 
+    /**
+     * 計算花域中心點座標（純數學計算，不存取方塊資料，跨 region / GUI 顯示 100% 安全）。
+     */
     fun getSafeTeleportLocation(claim: Claim): Location {
         val top = claim.parent ?: claim
         val lesser = top.lesserBoundaryCorner
         val greater = top.greaterBoundaryCorner
-        val world = lesser.world
-        val centerX = (lesser.blockX + greater.blockX) / 2
-        val centerZ = (lesser.blockZ + greater.blockZ) / 2
-
-        val highestY = world.getHighestBlockYAt(centerX, centerZ)
-        val targetY = if (highestY <= world.minHeight) 64 else highestY + 1
+        val world = lesser?.world ?: plugin.server.worlds.firstOrNull()
+        val minX = lesser?.blockX ?: 0
+        val maxX = greater?.blockX ?: 0
+        val minZ = lesser?.blockZ ?: 0
+        val maxZ = greater?.blockZ ?: 0
+        val centerX = (minX + maxX) / 2
+        val centerZ = (minZ + maxZ) / 2
+        val targetY = if ((lesser?.blockY ?: 64) > (world?.minHeight ?: 0)) lesser?.blockY ?: 64 else 64
         return Location(world, centerX + 0.5, targetY.toDouble(), centerZ + 0.5)
     }
 }

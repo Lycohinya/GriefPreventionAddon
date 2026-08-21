@@ -19,6 +19,7 @@ import org.bukkit.event.inventory.InventoryDragEvent
 
 class ClaimSettingsGuiListener(
     private val guiService: ClaimSettingsGuiService,
+    private val adminGuiService: ClaimAdminListGuiService,
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
     private val teleportService: ClaimTeleportService,
@@ -54,7 +55,27 @@ class ClaimSettingsGuiListener(
             return
         }
 
-        // 4. 設定開關卡片
+        // 4. 設定花域別名行動 (Slot 2)
+        if (event.slot == ClaimSettingsGuiService.RENAME_SLOT) {
+            player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
+            player.closeInventory()
+            val currentAlias = store.getAlias(holder.claimId) ?: "未設定"
+            player.sendMessage(messages.get("name.gui-prompt-header"))
+            player.sendMessage(messages.get("name.gui-prompt-actions",
+                "claimId" to holder.claimId.toString(),
+                "current" to currentAlias
+            ))
+            return
+        }
+
+        // 5. 管理員面板捷徑 (Slot 3)
+        if (event.slot == ClaimSettingsGuiService.ADMIN_PANEL_SLOT && (holder.isAdminViewer || player.hasPermission("griefpreventionaddon.admin"))) {
+            player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
+            adminGuiService.open(player)
+            return
+        }
+
+        // 6. 設定開關卡片
         val def = guiService.slotToSetting[event.slot] ?: return
 
         if (!holder.canEdit(player)) {
