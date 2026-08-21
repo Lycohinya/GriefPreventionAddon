@@ -32,7 +32,7 @@ commands:
     aliases: [ pvp, cpvp, pvpc ]
     usage: /pvp
   claimmobs:
-    description: 開啟花域的生物生成開關選單(一般敵對/掠奪者/夜魅/黏液怪/蝙蝠)
+    description: 開啟花域的生物生成開關選單(一般敵對/掠奪者/夜魅/史萊姆與岩漿立方怪/蝙蝠)
     aliases: [ cmob ]
     usage: /cmob [hostile|raider|phantom|slime|ambient]
   claiminfo:

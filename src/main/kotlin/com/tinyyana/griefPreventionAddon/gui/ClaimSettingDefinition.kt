@@ -85,8 +85,8 @@ object ClaimSettingRegistry {
 
     val NO_SLIME = ClaimSettingDefinition(
         key = ClaimSettingsKeys.NO_SLIME_SPAWN,
-        name = "黏液怪與岩漿怪",
-        description = "禁止史萊姆與岩漿怪自然生成與分裂",
+        name = "史萊姆與岩漿立方怪",
+        description = "禁止史萊姆與岩漿立方怪自然生成與分裂",
         iconId = "mob_slime",
         fallbackMaterial = Material.SLIME_BALL,
         isEnabled = { store, id -> store.isMobSpawnBlocked(ClaimSettingsKeys.NO_SLIME_SPAWN, id) },
