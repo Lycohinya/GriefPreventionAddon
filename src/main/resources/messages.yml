@@ -65,7 +65,19 @@ teleport:
   multiple-claims-hint: "<color:#a8a8a8>你擁有多塊花域，可使用 <color:#6fd8e8>/claimtp <名稱或編號></color> 傳送至特定花域：{claims}</color>"
   invalid-target: "<red>找不到名為「{target}」或編號為 #{target} 的花域！輸入 /ctp 查看可用清單。</red>"
   claim-not-found: "<red>找不到編號為 #{claimId} 的花域。</red>"
+  success-custom: "<color:#f9a8d4>❀ 已傳送至花域 <color:#ffd166><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId})</color> 的落腳點 <color:#a8a8a8>({x}, {y}, {z})</color></color>"
   failed: "<red>傳送失敗，目標花域可能處於不安全區域。</red>"
+
+# 花域落腳點:玩家自己指定 /ctp 要落在花域裡的哪一格,不設就用花域中心
+spawn:
+  set: "<color:#f9a8d4>❀ 已把落腳點設在 <color:#6fd8e8>({x}, {y}, {z})</color><color:#a8a8a8> (花域 #{claimId})</color></color>\n  👉 之後 <click:run_command:'/ctp'><hover:show_text:'<gray>點擊立即試傳一次</gray>'><color:#6fd8e8><bold>/ctp</bold></color></hover></click> 就會直接落在這裡"
+  cleared: "<color:#f9a8d4>❀ 已清除花域 <color:#6fd8e8>#{claimId}</color> 的落腳點,之後 /ctp 會回到花域中心</color>"
+  already-default: "<color:#a8a8a8>這塊花域(#{claimId})本來就沒有設落腳點,/ctp 會傳到中心</color>"
+  outside-claim: "<red>你現在站的位置不在這塊花域裡,落腳點只能設在自己的花域範圍內</red>"
+  not-in-claim: "<yellow>你目前沒有站在任何花域內,站進自己的花域再輸入一次</yellow>"
+  help-header: "<color:#f9a8d4><bold>❀ 花域落腳點</bold></color><color:#a8a8a8> (/ctp 傳送過來時要落在哪裡)</color>"
+  help-set: "  <click:run_command:'/cspawn'><hover:show_text:'<gray>把現在站的位置設成落腳點</gray>'><color:#6fd8e8><bold>[/cspawn]</bold></color> <gray>站到想要的位置,再輸入這個</gray></hover></click>"
+  help-clear: "  <click:run_command:'/cspawn clear'><hover:show_text:'<gray>清除落腳點,恢復用花域中心</gray>'><color:#fca5a5><bold>[/cspawn clear]</bold></color> <gray>恢復成傳到花域中心</gray></hover></click>"
 
 gui:
   title: "花域設定 #{claimId}"

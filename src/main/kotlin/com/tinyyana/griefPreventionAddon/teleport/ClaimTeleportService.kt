@@ -64,8 +64,12 @@ class ClaimTeleportService(
 
         val centerX = (lesser.blockX + greater.blockX) / 2
         val centerZ = (lesser.blockZ + greater.blockZ) / 2
-        val chunkX = centerX shr 4
-        val chunkZ = centerZ shr 4
+
+        // 自訂落腳點優先;它可能因為花域被縮小/搬移而落到範圍外,那種情況一律退回中心,
+        // 絕對不能把人傳到別人的地上——這是「傳送不會越界」的唯一防線
+        val customSpawn = resolveCustomSpawn(top)
+        val chunkX = (customSpawn?.blockX ?: centerX) shr 4
+        val chunkZ = (customSpawn?.blockZ ?: centerZ) shr 4
 
         if (closeInventory) {
             player.closeInventory()
@@ -74,15 +78,17 @@ class ClaimTeleportService(
         val plugin = bridge.plugin
 
         val doTeleport = Runnable {
-            val safeY = resolveSafeGroundY(world, centerX, centerZ, lesser.blockY)
-            val targetLoc = Location(
-                world,
-                centerX + 0.5,
-                safeY.toDouble(),
-                centerZ + 0.5,
-                player.location.yaw,
-                player.location.pitch,
-            )
+            val targetLoc = customSpawn ?: run {
+                val safeY = resolveSafeGroundY(world, centerX, centerZ, lesser.blockY)
+                Location(
+                    world,
+                    centerX + 0.5,
+                    safeY.toDouble(),
+                    centerZ + 0.5,
+                    player.location.yaw,
+                    player.location.pitch,
+                )
+            }
 
             player.teleportAsync(targetLoc).thenAccept { success ->
                 if (success) {
@@ -91,7 +97,7 @@ class ClaimTeleportService(
                     val displayName = if (!alias.isNullOrBlank()) "「$alias」" else "#$claimId"
                     player.sendMessage(
                         messages.get(
-                            "teleport.success",
+                            if (customSpawn != null) "teleport.success-custom" else "teleport.success",
                             "name" to displayName,
                             "claimId" to claimId.toString(),
                             "x" to targetLoc.blockX.toString(),
@@ -117,6 +123,27 @@ class ClaimTeleportService(
             // 非 Folia 或測試環境降級執行
             doTeleport.run()
         }
+    }
+
+    /**
+     * 取出這塊花域仍然有效的自訂落腳點。
+     *
+     * 「有效」= 資料解析得出來、世界還在、而且座標**仍在這塊花域範圍內**。
+     * 花域被縮小或子花域被刪掉之後,舊的落腳點可能已經落在別人家或荒野;那種情況回傳 null,
+     * 呼叫端會安靜地退回中心,而不是把玩家傳出去。
+     */
+    fun resolveCustomSpawn(claim: Claim): Location? {
+        val claimId = claim.id ?: return null
+        val point = ClaimSpawnPoint.decode(store.getSpawnRaw(claimId)) ?: return null
+        val loc = point.toLocation() ?: return null
+        return if (isInsideClaim(claim, loc)) loc else null
+    }
+
+    /** 座標是否落在這塊花域內(忽略高度——花域是柱狀範圍,y 不在判定裡) */
+    fun isInsideClaim(claim: Claim, location: Location): Boolean {
+        val claimWorld = claim.lesserBoundaryCorner?.world ?: return false
+        if (location.world?.name != claimWorld.name) return false
+        return claim.contains(location, true, false)
     }
 
     private fun resolveSafeGroundY(world: World, x: Int, z: Int, fallbackY: Int): Int {

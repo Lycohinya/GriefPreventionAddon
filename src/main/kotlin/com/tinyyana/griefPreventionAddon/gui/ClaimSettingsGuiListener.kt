@@ -1,5 +1,6 @@
 package com.tinyyana.griefPreventionAddon.gui
 
+import com.tinyyana.griefPreventionAddon.command.ClaimSpawnCommand
 import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
@@ -23,6 +24,7 @@ class ClaimSettingsGuiListener(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
     private val teleportService: ClaimTeleportService,
+    private val spawnCommand: ClaimSpawnCommand,
     private val messages: Messages,
 ) : Listener {
 
@@ -68,6 +70,29 @@ class ClaimSettingsGuiListener(
             return
         }
 
+        // 4b. 花域落腳點 (Slot 4):左鍵設成現在站的位置,右鍵清除
+        if (event.slot == ClaimSettingsGuiService.SPAWN_SLOT) {
+            if (!holder.canEdit(player)) {
+                player.sendMessage(messages.get("gui.no-permission"))
+                player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 0.8f, 1.0f)
+                return
+            }
+            if (event.isRightClick) {
+                if (store.getSpawnRaw(holder.claimId) == null) {
+                    player.sendMessage(messages.get("spawn.already-default", "claimId" to holder.claimId.toString()))
+                } else {
+                    store.setSpawnRaw(holder.claimId, null)
+                    AuditLog.log("GriefPreventionAddon", player.name, "claim-spawn.clear", "claim=${holder.claimId}")
+                    player.sendMessage(messages.get("spawn.cleared", "claimId" to holder.claimId.toString()))
+                    player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.0f)
+                }
+            } else {
+                spawnCommand.setSpawnHere(player, holder.claim, holder.claimId)
+            }
+            refresh(event, holder, player)
+            return
+        }
+
         // 5. 管理員面板捷徑 (Slot 3)
         if (event.slot == ClaimSettingsGuiService.ADMIN_PANEL_SLOT && (holder.isAdminViewer || player.hasPermission("griefpreventionaddon.admin"))) {
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
@@ -96,7 +121,11 @@ class ClaimSettingsGuiListener(
             recipients.forEach { it.sendMessage(pvpMsg) }
         }
 
-        // 即時刷新介面
+        refresh(event, holder, player)
+    }
+
+    /** 重畫介面,讓剛剛的變更立刻反映在卡片上 */
+    private fun refresh(event: InventoryClickEvent, holder: ClaimSettingsGuiHolder, player: Player) {
         val info = bridge.getClaimInfo(player.location) ?: ClaimInfoResult(
             claimId = holder.claimId,
             ownerName = holder.ownerName,

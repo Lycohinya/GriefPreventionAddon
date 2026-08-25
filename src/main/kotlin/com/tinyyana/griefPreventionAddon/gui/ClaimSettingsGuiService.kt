@@ -3,6 +3,7 @@ package com.tinyyana.griefPreventionAddon.gui
 import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
+import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
 import com.tinyyana.lycoLib.config.Messages
 import com.tinyyana.lycoLib.menu.MenuBand
 import com.tinyyana.lycoLib.menu.MenuBuilder
@@ -16,6 +17,7 @@ import org.bukkit.inventory.Inventory
 class ClaimSettingsGuiService(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
+    private val teleportService: ClaimTeleportService,
     private val messages: Messages,
     private val builder: MenuBuilder = MenuBuilder(),
 ) {
@@ -28,6 +30,7 @@ class ClaimSettingsGuiService(
         const val TELEPORT_SLOT = 1
         const val RENAME_SLOT = 2
         const val ADMIN_PANEL_SLOT = 3
+        const val SPAWN_SLOT = 4
 
         const val TNT_SLOT = 9
         const val PVP_SLOT = 10
@@ -120,11 +123,18 @@ class ClaimSettingsGuiService(
         )
 
         // 2. Context Band: 傳送主要行動 (Slot 1)
+        // 設了落腳點就傳落腳點,標題與座標都要跟著換——顯示「中心」卻傳到別處是最糟的介面
+        val customSpawn = teleportService.resolveCustomSpawn(holder.claim)
+        val destLoc = customSpawn ?: safeLoc
         val teleportLore = listOf(
-            "<gray>點擊瞬間傳送至此花域的中心安全地面</gray>",
+            if (customSpawn != null) {
+                "<gray>點擊傳送到你自己設定的落腳點</gray>"
+            } else {
+                "<gray>點擊瞬間傳送至此花域的中心安全地面</gray>"
+            },
             "",
             "<dark_gray>目標</dark_gray> <color:#6fd8e8>${aliasDisplay ?: "#${holder.claimId}"}</color>",
-            "<dark_gray>座標</dark_gray> <color:#a8a8a8>(${safeLoc.world?.name ?: "world"} ${safeLoc.blockX}, ${safeLoc.blockZ})</color>",
+            "<dark_gray>座標</dark_gray> <color:#a8a8a8>(${destLoc.world?.name ?: "world"} ${destLoc.blockX}, ${destLoc.blockZ})</color>",
             "",
             "<yellow><bold>左鍵</bold></yellow><white> 立即傳送</white>",
         )
@@ -132,7 +142,11 @@ class ClaimSettingsGuiService(
             inventory = inv,
             slot = TELEPORT_SLOT,
             iconId = "travel",
-            name = "<color:#ff8fc4><bold>傳送至花域中心</bold></color>",
+            name = if (customSpawn != null) {
+                "<color:#ff8fc4><bold>傳送至花域落腳點</bold></color>"
+            } else {
+                "<color:#ff8fc4><bold>傳送至花域中心</bold></color>"
+            },
             lore = teleportLore,
             fallback = Material.ENDER_PEARL,
             glint = true,
@@ -156,6 +170,37 @@ class ClaimSettingsGuiService(
             lore = renameLore,
             fallback = Material.NAME_TAG,
             glint = aliasDisplay != null,
+        )
+
+        // 3b. Context Band: 自訂落腳點 (Slot 4)
+        val spawn = teleportService.resolveCustomSpawn(holder.claim)
+        val spawnRawSet = store.getSpawnRaw(holder.claimId) != null
+        val spawnLore = mutableListOf(
+            "<gray>指定 /ctp 傳送過來時要落在哪裡,不設就是花域中心地面</gray>",
+            "",
+        )
+        when {
+            spawn != null -> spawnLore.add(
+                "<dark_gray>目前落腳點</dark_gray> <color:#6fd8e8>(${spawn.blockX}, ${spawn.blockY}, ${spawn.blockZ})</color>",
+            )
+            // 設過但解析不出來或已經在花域外:要講清楚,不然玩家只會覺得「我設了但沒用」
+            spawnRawSet -> spawnLore.add("<dark_gray>目前落腳點</dark_gray> <color:#fca5a5>已在花域範圍外,傳送會退回中心</color>")
+            else -> spawnLore.add("<dark_gray>目前落腳點</dark_gray> <color:#a8a8a8>未設定 (使用花域中心)</color>")
+        }
+        spawnLore.add("<dark_gray>怎麼設</dark_gray> <color:#a8a8a8>站到想要的位置,再按這一格或輸入 /cspawn</color>")
+        spawnLore.add("")
+        spawnLore.add("<yellow><bold>左鍵</bold></yellow><white> 把你現在站的位置設成落腳點</white>")
+        if (spawnRawSet) {
+            spawnLore.add("<yellow><bold>右鍵</bold></yellow><white> 清除落腳點,恢復用花域中心</white>")
+        }
+        builder.placeIcon(
+            inventory = inv,
+            slot = SPAWN_SLOT,
+            iconId = "warp_point",
+            name = "<color:#ffb7d5><bold>花域落腳點</bold></color>",
+            lore = spawnLore,
+            fallback = Material.LODESTONE,
+            glint = spawn != null,
         )
 
         // 4. Context Band: 管理員捷徑 (Slot 3, 僅管理員檢視模式顯示)

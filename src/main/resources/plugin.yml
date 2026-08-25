@@ -46,6 +46,11 @@ commands:
     description: 設定或清除目前花域的自訂別名(中英皆可)
     aliases: [ cname, claimalias, calias ]
     usage: /cname [別名|clear]
+  claimspawn:
+    description: 把現在站的位置設成這塊花域的落腳點(/ctp 的目的地)
+    aliases: [ cspawn, claimpoint, csetspawn ]
+    permission: griefpreventionaddon.spawn
+    usage: /cspawn [set|clear]
   claimslist:
     description: 列出自己名下的全部花域與別名，附點擊傳送捷徑
     aliases: [ claims, myclaims ]
@@ -78,6 +83,9 @@ permissions:
   griefpreventionaddon.tp.admin:
     description: 傳送至管理員花域
     default: op
+  griefpreventionaddon.spawn:
+    description: 設定自己花域的落腳點(/cspawn)
+    default: true
   griefpreventionaddon.settings.others:
     description: 於 GUI 或指令中修改非自己花域的設定
     default: op

@@ -110,6 +110,35 @@ class ClaimSettingsStoreTest {
     }
 
     @Test
+    fun `spawn point CRUD survives reconnect and purge`() {
+        assertEquals(null, store.getSpawnRaw(100L))
+
+        store.setSpawnRaw(100L, "world;1.5;64.0;-2.5;90.0;0.0")
+        store.setSpawnRaw(200L, "world_nether;10.0;70.0;10.0;0.0;0.0")
+        assertEquals("world;1.5;64.0;-2.5;90.0;0.0", store.getSpawnRaw(100L))
+
+        // 落腳點不能被誤認成布林開關(值不是 "true",載入時走的是另一條分支)
+        assertFalse(store.getBoolean(ClaimSettingsKeys.TP_POINT, 100L))
+
+        db.close()
+        val newDb = Db(dbFile)
+        val newStore = ClaimSettingsStore(newDb)
+        newStore.init()
+
+        assertEquals("world;1.5;64.0;-2.5;90.0;0.0", newStore.getSpawnRaw(100L))
+        assertEquals("world_nether;10.0;70.0;10.0;0.0;0.0", newStore.getSpawnRaw(200L))
+
+        newStore.setSpawnRaw(100L, null)
+        assertEquals(null, newStore.getSpawnRaw(100L))
+
+        // 花域被刪掉時落腳點也要跟著清掉,否則同編號的新花域會繼承前一塊的落點
+        newStore.purgeClaim(200L)
+        assertEquals(null, newStore.getSpawnRaw(200L))
+
+        newDb.close()
+    }
+
+    @Test
     fun `alias CRUD and findClaimId support`() {
         // 初始狀態無別名
         assertEquals(null, store.getAlias(100L))

@@ -22,6 +22,9 @@ object ClaimSettingsKeys {
     /** 領地別名(自訂名稱，支援中文與英數字) */
     const val ALIAS = "alias"
 
+    /** 自訂落腳點:`/ctp` 的目的地,序列化格式見 [com.tinyyana.griefPreventionAddon.teleport.ClaimSpawnPoint] */
+    const val TP_POINT = "tp-point"
+
     val ALL_KEYS = listOf(
         TNT,
         PVP,
@@ -31,6 +34,7 @@ object ClaimSettingsKeys {
         NO_SLIME_SPAWN,
         NO_AMBIENT_SPAWN,
         ALIAS,
+        TP_POINT,
     )
 }
 
@@ -47,6 +51,9 @@ class ClaimSettingsStore(
 
     /** claimId -> 自訂別名 (支援中英文) */
     private val aliasCache = ConcurrentHashMap<Long, String>()
+
+    /** claimId -> 自訂落腳點(序列化字串;解析交給 ClaimSpawnPoint,store 不依賴 Bukkit) */
+    private val spawnCache = ConcurrentHashMap<Long, String>()
 
     fun init() {
         db.tx { conn ->
@@ -72,6 +79,10 @@ class ClaimSettingsStore(
                         if (key == ClaimSettingsKeys.ALIAS) {
                             if (value.isNotBlank()) {
                                 aliasCache[claimId] = value
+                            }
+                        } else if (key == ClaimSettingsKeys.TP_POINT) {
+                            if (value.isNotBlank()) {
+                                spawnCache[claimId] = value
                             }
                         } else if (value.equals("true", ignoreCase = true)) {
                             cache.getOrPut(key) { ConcurrentHashMap.newKeySet() }.add(claimId)
@@ -106,6 +117,36 @@ class ClaimSettingsStore(
                     stmt.executeUpdate()
                 }
                 aliasCache.remove(claimId)
+            }
+        }
+    }
+
+    /** 取得領地自訂落腳點的原始字串(null = 未設定,傳送時退回花域中心) */
+    fun getSpawnRaw(claimId: Long): String? = spawnCache[claimId]
+
+    /** 設定或清除領地自訂落腳點(null 或空白代表清除) */
+    fun setSpawnRaw(claimId: Long, encoded: String?) {
+        val clean = encoded?.trim()?.takeIf { it.isNotBlank() }
+        val now = System.currentTimeMillis()
+        db.tx { conn ->
+            if (clean != null) {
+                val sql = "INSERT INTO claim_settings(claim_id, setting_key, setting_value, updated_at) VALUES (?, ?, ?, ?) " +
+                    "ON CONFLICT(claim_id, setting_key) DO UPDATE SET setting_value=excluded.setting_value, updated_at=excluded.updated_at"
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setLong(1, claimId)
+                    stmt.setString(2, ClaimSettingsKeys.TP_POINT)
+                    stmt.setString(3, clean)
+                    stmt.setLong(4, now)
+                    stmt.executeUpdate()
+                }
+                spawnCache[claimId] = clean
+            } else {
+                conn.prepareStatement("DELETE FROM claim_settings WHERE claim_id = ? AND setting_key = ?").use { stmt ->
+                    stmt.setLong(1, claimId)
+                    stmt.setString(2, ClaimSettingsKeys.TP_POINT)
+                    stmt.executeUpdate()
+                }
+                spawnCache.remove(claimId)
             }
         }
     }
@@ -207,6 +248,7 @@ class ClaimSettingsStore(
         }
         cache.values.forEach { it.remove(claimId) }
         aliasCache.remove(claimId)
+        spawnCache.remove(claimId)
     }
 
     /**

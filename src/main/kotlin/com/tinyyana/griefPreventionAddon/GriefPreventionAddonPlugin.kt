@@ -56,8 +56,16 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
 
         griefPreventionBridge = GriefPreventionBridge(this)
         claimTeleportService = ClaimTeleportService(griefPreventionBridge, claimSettingsStore, messages)
-        guiService = ClaimSettingsGuiService(griefPreventionBridge, claimSettingsStore, messages)
+        guiService = ClaimSettingsGuiService(griefPreventionBridge, claimSettingsStore, claimTeleportService, messages)
         adminGuiService = ClaimAdminListGuiService(griefPreventionBridge, claimSettingsStore, messages)
+
+        // 落腳點指令同時是 GUI 按鈕的實作(同一份行為,不要複製兩套),所以先建起來
+        val spawnCmd = com.tinyyana.griefPreventionAddon.command.ClaimSpawnCommand(
+            bridge = griefPreventionBridge,
+            store = claimSettingsStore,
+            teleportService = claimTeleportService,
+            messages = messages,
+        )
 
         // 註冊監聽器
         val pm = server.pluginManager
@@ -71,6 +79,7 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
                 bridge = griefPreventionBridge,
                 store = claimSettingsStore,
                 teleportService = claimTeleportService,
+                spawnCommand = spawnCmd,
                 messages = messages,
             ),
             this,
@@ -121,6 +130,11 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
         getCommand("claimname")?.let {
             it.setExecutor(nameCmd)
             it.tabCompleter = nameCmd
+        }
+
+        getCommand("claimspawn")?.let {
+            it.setExecutor(spawnCmd)
+            it.tabCompleter = spawnCmd
         }
 
         val listCmd = com.tinyyana.griefPreventionAddon.command.ClaimsListCommand(griefPreventionBridge, claimSettingsStore, messages)
