@@ -1,13 +1,13 @@
 # GriefPreventionAddon
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Minecraft Paper](https://img.shields.io/badge/Minecraft-Paper%20%2F%20Folia%2026.2-brightgreen.svg)](https://papermc.io/)
+[![Minecraft Paper](https://img.shields.io/badge/Minecraft-Paper%20%2F%20Lecithin%2026.2-brightgreen.svg)](https://papermc.io/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4-purple.svg)](https://kotlinlang.org/)
 
 **A modern, feature-rich companion addon for [GriefPrevention](https://github.com/TechFortress/GriefPrevention).**  
 Provides per-claim TNT protection, guest `/sethome` permission management, PvP toggles, natural mob spawning filters, custom claim aliases, fast teleportation, custom landing points, interactive GUI menus, and a global administrative panel.
 
-Supports **Paper**, **Folia**, and **Lecithin 26.2** with asynchronous, thread-safe region scheduling, zero hard dependencies on external libraries, and full multi-language (i18n) localization with auto-detection of player client locales.
+Supports **Paper**, **Lecithin 26.2**, and Paper API compatible server cores with asynchronous thread safety, zero hard dependencies on internal libraries, and full multi-language (i18n) localization with auto-detection of player client locales.
 
 ---
 
@@ -19,7 +19,7 @@ Supports **Paper**, **Folia**, and **Lecithin 26.2** with asynchronous, thread-s
 | **Guest `/sethome` Control** | Claim owners decide whether untrusted visitors can use `/sethome` in their claim, preventing unauthorized fast travel. | 地主可自由設定是否允許未信任的訪客在自己花域內使用 `/sethome` 設家。 | `/csethome [on\|off\|status]` |
 | **PvP Combat Toggle** | Enable or disable player vs player combat inside the claim with real-time feedback. | 地主可自主開啟或關閉領地內的 PVP 對戰狀態，保護和平玩家。 | `/pvp` (`/pvpinclaim`) |
 | **Natural Mob Filters** | Selectively toggle natural spawning for 5 mob categories (Hostile, Raider, Phantom, Slime, Ambient) without affecting spawners or breeding. | 分類開關自然生怪（一般敵對 / 掠奪者 / 夜魅 / 史萊姆 / 蝙蝠），不影響生怪磚與繁殖。 | `/cmob [category]` |
-| **Fast Claim Teleport** | Instantly teleport to claim centers or custom spawn locations using Folia asynchronous region scheduling. | 透過 Folia 異步排程安全瞬間傳送至花域中心或自訂落腳點。 | `/claimtp [id\|alias]` (`/ctp`) |
+| **Fast Claim Teleport** | Instantly teleport to claim centers or custom spawn locations with safe height and region resolution. | 安全瞬間傳送至花域中心或自訂落腳點。 | `/claimtp [id\|alias]` (`/ctp`) |
 | **Custom Spawn Point** | Claim owners can define their exact standing location as the landing target for `/ctp`. | 地主可將當前站立點設為 `/ctp` 傳送落腳點，隨時自由清除或恢復中心。 | `/cspawn [set\|clear]` |
 | **Claim Aliases & Naming** | Assign memorable names (e.g. `home`, `farm`, `shop`) to claims for convenient teleportation and recognition. | 為領地設定自訂別名（如「主家」、「農場」），支援中英文並可直接用於傳送。 | `/cname [alias\|clear]` |
 | **Interactive GUI Menu** | Chest GUI for intuitive claim settings, renaming, spawn points, and toggle adjustments. | 視覺化箱子選單，直觀管理花域狀態、改名、落腳點、TNT、PvP 與各類生物生成。 | `/csettings [id\|alias]` |
@@ -30,10 +30,11 @@ Supports **Paper**, **Folia**, and **Lecithin 26.2** with asynchronous, thread-s
 
 ## 📋 Requirements / 環境需求
 
-* **Minecraft Core**: Paper, Folia, or Lecithin **26.2** (or compatible Paper API).
+* **Minecraft Core**: **Paper**, **Lecithin 26.2**, or compatible **Paper API** server implementations.  
+  *(Note: Upstream GriefPrevention does not run natively on standard Folia without compatibility modifications; multithreaded server execution requires Lecithin or a Paper-compatible environment).*
 * **Java Runtime**: **Java 25**.
 * **Dependencies**: [GriefPrevention](https://github.com/TechFortress/GriefPrevention) (Soft dependency).
-* **No external proprietary libraries required** — 100% standalone and open-source.
+* **No proprietary libraries required** — 100% standalone and open-source.
 
 ---
 
