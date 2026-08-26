@@ -12,6 +12,9 @@ object ClaimSettingsKeys {
     /** 領地 PVP:存在且為 true = 開放 PVP;預設 false (GP 領地保護) */
     const val PVP = "pvp"
 
+    /** 訪客設家權限:存在且為 true = 允許未信任訪客在此花域使用 /sethome;預設 false (禁止訪客設家) */
+    const val ALLOW_SETHOME = "allow-sethome"
+
     /** 生物生成開關:存在且為 true = 該領地禁止該類生物自然生成 */
     const val NO_HOSTILE_SPAWN = "no-hostile-spawn"
     const val NO_RAIDER_SPAWN = "no-raider-spawn"
@@ -28,6 +31,7 @@ object ClaimSettingsKeys {
     val ALL_KEYS = listOf(
         TNT,
         PVP,
+        ALLOW_SETHOME,
         NO_HOSTILE_SPAWN,
         NO_RAIDER_SPAWN,
         NO_PHANTOM_SPAWN,
@@ -180,6 +184,9 @@ class ClaimSettingsStore(
 
     /** 領地是否開放 PVP(預設 false) */
     fun isPvpAllowed(claimId: Long): Boolean = cache[ClaimSettingsKeys.PVP]?.contains(claimId) == true
+
+    /** 領地是否允許訪客 /sethome (預設 false) */
+    fun isSethomeAllowed(claimId: Long): Boolean = cache[ClaimSettingsKeys.ALLOW_SETHOME]?.contains(claimId) == true
 
     /** 領地是否禁止指定類別的生物生成 */
     fun isMobSpawnBlocked(key: String, claimId: Long): Boolean = cache[key]?.contains(claimId) == true

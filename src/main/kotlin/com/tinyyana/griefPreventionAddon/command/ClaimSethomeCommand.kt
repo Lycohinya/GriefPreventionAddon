@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class ClaimTntCommand(
+class ClaimSethomeCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
     private val lang: LanguageManager,
@@ -37,15 +37,17 @@ class ClaimTntCommand(
 
         val sub = args.firstOrNull()?.lowercase()
 
+        // Status query
         if (sub == "status" || sub == "info") {
-            val allowed = store.isTntAllowed(ownership.claimId)
-            val msgKey = if (allowed) "tnt.status-on" else "tnt.status-off"
+            val allowed = store.isSethomeAllowed(ownership.claimId)
+            val msgKey = if (allowed) "sethome.status-on" else "sethome.status-off"
             player.sendMessage(lang.get(player, msgKey, "claimId" to ownership.claimId.toString()))
             return true
         }
 
-        val canModify = (ownership.isOwner && player.hasPermission("griefpreventionaddon.tnt")) ||
-            player.hasPermission("griefpreventionaddon.tnt.others") ||
+        // Permission check
+        val canModify = (ownership.isOwner && player.hasPermission("griefpreventionaddon.sethome")) ||
+            player.hasPermission("griefpreventionaddon.sethome.others") ||
             player.hasPermission("griefpreventionaddon.admin") ||
             player.isOp
 
@@ -56,20 +58,20 @@ class ClaimTntCommand(
 
         val newState = when (sub) {
             "on", "enable", "allow", "true" -> {
-                store.setBoolean(ClaimSettingsKeys.TNT, ownership.claimId, true)
+                store.setBoolean(ClaimSettingsKeys.ALLOW_SETHOME, ownership.claimId, true)
                 true
             }
             "off", "disable", "deny", "false" -> {
-                store.setBoolean(ClaimSettingsKeys.TNT, ownership.claimId, false)
+                store.setBoolean(ClaimSettingsKeys.ALLOW_SETHOME, ownership.claimId, false)
                 false
             }
-            else -> store.toggle(ClaimSettingsKeys.TNT, ownership.claimId)
+            else -> store.toggle(ClaimSettingsKeys.ALLOW_SETHOME, ownership.claimId)
         }
 
-        val msgKey = if (newState) "tnt.allowed" else "tnt.blocked"
+        val msgKey = if (newState) "sethome.allowed" else "sethome.blocked"
         player.sendMessage(lang.get(player, msgKey, "claimId" to ownership.claimId.toString()))
 
-        auditLogger?.log(player.name, "claim-tnt", "claim=${ownership.claimId} state=$newState")
+        auditLogger?.log(player.name, "claim-sethome", "claim=${ownership.claimId} state=$newState")
         return true
     }
 

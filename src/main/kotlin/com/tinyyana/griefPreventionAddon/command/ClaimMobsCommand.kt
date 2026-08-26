@@ -1,10 +1,10 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.audit.AuditLogger
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
-import com.tinyyana.lycoLib.audit.AuditLog
-import com.tinyyana.lycoLib.config.Messages
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -14,7 +14,8 @@ import org.bukkit.entity.Player
 class ClaimMobsCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
-    private val messages: Messages,
+    private val lang: LanguageManager,
+    private val auditLogger: AuditLogger? = null,
 ) : CommandExecutor, TabCompleter {
 
     private val categories = listOf(
@@ -29,18 +30,18 @@ class ClaimMobsCommand(
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         val player = sender as? Player ?: run {
-            sender.sendMessage(messages.get("system.player-only"))
+            sender.sendMessage(lang.get("system.player-only"))
             return true
         }
 
         if (!bridge.isAvailable()) {
-            player.sendMessage(messages.get("claim.gp-missing"))
+            player.sendMessage(lang.get(player, "claim.gp-missing"))
             return true
         }
 
         val ownership = bridge.getTopClaimOwnership(player)
         if (ownership == null) {
-            player.sendMessage(messages.get("claim.not-in-claim"))
+            player.sendMessage(lang.get(player, "claim.not-in-claim"))
             return true
         }
 
@@ -50,7 +51,7 @@ class ClaimMobsCommand(
             player.isOp
 
         if (!canModify) {
-            player.sendMessage(messages.get("claim.not-owner"))
+            player.sendMessage(lang.get(player, "claim.not-owner"))
             return true
         }
 
@@ -59,14 +60,14 @@ class ClaimMobsCommand(
 
         if (category != null) {
             val state = runCatching { store.toggle(category.key, ownership.claimId) }.getOrElse {
-                player.sendMessage(messages.get("claim.save-failed"))
+                player.sendMessage(lang.get(player, "claim.save-failed"))
                 return true
             }
-            val catLabel = messages.raw(category.labelKey) ?: category.arg
+            val catLabel = lang.raw(player, category.labelKey) ?: category.arg
             player.sendMessage(
-                messages.get(if (state) "mobs.category-on" else "mobs.category-off", "label" to catLabel),
+                lang.get(player, if (state) "mobs.category-on" else "mobs.category-off", "label" to catLabel),
             )
-            AuditLog.log("GriefPreventionAddon", player.name, "claim-toggle.${category.key}", "claim=${ownership.claimId} state=$state")
+            auditLogger?.log(player.name, "claim-toggle.${category.key}", "claim=${ownership.claimId} state=$state")
         }
 
         openMobsMenu(player, ownership.claimId)
@@ -74,19 +75,19 @@ class ClaimMobsCommand(
     }
 
     private fun openMobsMenu(player: Player, claimId: Long) {
-        val sb = StringBuilder(messages.raw("mobs.menu-header") ?: "")
+        val sb = StringBuilder(lang.raw(player, "mobs.menu-header") ?: "")
         for (category in categories) {
             val blocked = store.isMobSpawnBlocked(category.key, claimId)
-            val state = messages.raw(if (blocked) "mobs.state-on" else "mobs.state-off") ?: ""
-            val catLabel = messages.raw(category.labelKey) ?: category.arg
-            val line = (messages.raw("mobs.menu-line") ?: "")
+            val state = lang.raw(player, if (blocked) "mobs.state-on" else "mobs.state-off") ?: ""
+            val catLabel = lang.raw(player, category.labelKey) ?: category.arg
+            val line = (lang.raw(player, "mobs.menu-line") ?: "")
                 .replace("{cmd}", category.arg)
                 .replace("{state}", state)
                 .replace("{label}", catLabel)
             sb.append("<newline>").append(line)
         }
-        messages.raw("mobs.menu-hint")?.let { sb.append("<newline>").append(it) }
-        player.sendMessage(messages.render(sb.toString()))
+        lang.raw(player, "mobs.menu-hint")?.let { sb.append("<newline>").append(it) }
+        player.sendMessage(lang.render(sb.toString(), false, player))
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {

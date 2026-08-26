@@ -1,0 +1,280 @@
+system:
+  player-only: "<red>Only in-game players can execute this command.</red>"
+  prefix: "<color:#f9a8d4>[Claim]</color> "
+  no-permission: "<red>You do not have permission to execute this command or action.</red>"
+  invalid-args: "<red>Invalid command arguments. Please check usage format.</red>"
+
+claim:
+  gp-missing: "<red>GriefPrevention is not installed or enabled.</red>"
+  not-in-claim: "<yellow>You are not standing inside any claim.</yellow>"
+  not-owner: "<red>You are not the owner of this claim and cannot modify its settings.</red>"
+  save-failed: "<red>Failed to save claim settings. Please contact an administrator.</red>"
+
+tnt:
+  allowed: "<color:#f9a8d4>This claim now <color:#6fd8e8><bold>allows</bold></color> TNT explosion block damage.</color>"
+  blocked: "<color:#f9a8d4>This claim now <color:#a8a8a8><bold>blocks</bold></color> TNT explosion block damage.</color>"
+  status-on: "<color:#f5f5f5>Claim <color:#6fd8e8>#{claimId}</color> TNT explosions are: <color:#6fd8e8><bold>Allowed (Damage Enabled)</bold></color></color>"
+  status-off: "<color:#f5f5f5>Claim <color:#6fd8e8>#{claimId}</color> TNT explosions are: <color:#a8a8a8><bold>Protected (Damage Disabled)</bold></color></color>"
+  toggled-by-admin: "<color:#a8a8a8>[Admin {admin} updated claim #{claimId} TNT setting to {state}]</color>"
+
+pvp:
+  allowed: "<color:#f9a8d4>PvP combat has been <color:#6fd8e8><bold>enabled</bold></color> in this claim. Stay alert!</color>"
+  blocked: "<color:#f9a8d4>PvP combat has been <color:#a8a8a8><bold>disabled</bold></color> in this claim. Claim protection restored.</color>"
+
+sethome:
+  allowed: "<color:#f9a8d4>This claim now <color:#6fd8e8><bold>allows</bold></color> visitors to use /sethome.</color>"
+  blocked: "<color:#f9a8d4>This claim now <color:#a8a8a8><bold>blocks</bold></color> visitors from using /sethome.</color>"
+  status-on: "<color:#f5f5f5>Claim <color:#6fd8e8>#{claimId}</color> visitor /sethome is: <color:#6fd8e8><bold>Allowed</bold></color></color>"
+  status-off: "<color:#f5f5f5>Claim <color:#6fd8e8>#{claimId}</color> visitor /sethome is: <color:#a8a8a8><bold>Protected (Blocked for visitors)</bold></color></color>"
+  blocked-in-claim: "<red>The owner of this claim has not allowed visitors to /sethome here.</red>"
+
+mobs:
+  category-on: "<color:#f9a8d4>Natural spawning of {label} is now <color:#6fd8e8><bold>blocked</bold></color> in this claim.</color>"
+  category-off: "<color:#f9a8d4>Natural spawning of {label} is now <color:#a8a8a8><bold>allowed</bold></color> in this claim.</color>"
+  menu-header: "<color:#f9a8d4><bold>Claim Mob Spawning Toggle</bold></color><color:#a8a8a8> (Click or /cmob <category>)</color>"
+  menu-line: "  <click:run_command:/cmob {cmd}><hover:show_text:'<gray>Click to toggle {label}</gray>'>{state} <color:#f5f5f5>{label}</color> <color:#6fd8e8>[/cmob {cmd}]</color></hover></click>"
+  state-on: "<color:#6fd8e8>[Blocked]</color>"
+  state-off: "<color:#a8a8a8>[Natural]</color>"
+  menu-hint: "<color:#a8a8a8>※ Only affects natural spawns. Spawners, eggs, breeding, and commands are unaffected.</color>"
+  cat-hostile: "Hostile Mobs (Zombies/Skeletons/Creepers)"
+  cat-raider: "Pillager Patrols & Raids"
+  cat-phantom: "Phantoms (Insomnia)"
+  cat-slime: "Slimes & Magma Cubes"
+  cat-ambient: "Ambient (Bats)"
+
+claim-info:
+  wilderness: "<yellow>You are currently standing in the wilderness.</yellow>"
+  admin-claim: "<color:#f9a8d4><bold>Admin Claim</bold></color> <color:#a8a8a8>({width} × {height}, {area} blocks)</color>"
+  owned: "<color:#f9a8d4><bold>{owner}</bold></color><color:#f5f5f5>'s Claim</color> {alias}<color:#a8a8a8>({width} × {height}, {area} blocks)</color>"
+  actions: "  <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>Teleport to this claim center</gray>'><color:#6fd8e8><bold>[Teleport]</bold></color></hover></click>   <click:run_command:/csettings {claimId}><hover:show_text:'<gray>Open claim settings GUI</gray>'><color:#f9a8d4><bold>[Settings]</bold></color></hover></click>   <click:suggest_command:'/cname '><hover:show_text:'<gray>Set a custom alias for this claim</gray>'><color:#ffd166><bold>[Set Alias]</bold></color></hover></click>"
+  open-gui: "<click:run_command:/csettings><hover:show_text:'<gray>Click to open claim settings menu</gray>'><color:#6fd8e8><bold>[Click to Open Settings]</bold></color></hover></click>"
+
+name:
+  guide-header: "<color:#f9a8d4><bold>❀ Claim Alias (Custom Name) Guide</bold></color>"
+  guide-current: "  <dark_gray>Current Claim:</dark_gray> <color:#ffd166>{name}</color> <color:#a8a8a8>(#{claimId})</color>"
+  guide-current-none: "  <dark_gray>Current Location:</dark_gray> <color:#a8a8a8>Wilderness or not your claim</color>"
+  guide-line-set: "  <click:suggest_command:'/cname '><hover:show_text:'<gray>Click to suggest command</gray>'><color:#6fd8e8><bold>[/cname <name>]</bold></color> <gray>Set alias for current claim (e.g. /cname home, /cname farm)</gray></hover></click>"
+  guide-line-clear: "  <click:run_command:'/cname clear'><hover:show_text:'<gray>Click to clear alias</gray>'><color:#fca5a5><bold>[/cname clear]</bold></color> <gray>Clear alias of current claim</gray></hover></click>"
+  guide-line-id: "  <click:suggest_command:'/cname 1 '><hover:show_text:'<gray>Click to suggest command</gray>'><color:#ffd166><bold>[/cname <id> <name>]</bold></color> <gray>Set alias for a specific claim ID</gray></hover></click>"
+  guide-quick-prompt: "  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[Click to type /cname <name>]</bold></color></click>   <click:suggest_command:'/cname home'><color:#ffd166>[/cname home]</color></click>   <click:suggest_command:'/cname farm'><color:#ffd166>[/cname farm]</color></click>   <click:run_command:'/claimslist'><color:#a8a8a8>[View Claims List]</color></click>"
+  gui-prompt-header: "<color:#f9a8d4><bold>❀ Enter desired claim alias in chat:</bold></color>"
+  gui-prompt-actions: "  Current Claim: <color:#ffd166>{current}</color> (#{claimId})\n  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[Type /cname <alias>]</bold></color></click>   <click:suggest_command:'/cname home'><color:#ffd166>[home]</color></click>   <click:suggest_command:'/cname farm'><color:#ffd166>[farm]</color></click>   <click:run_command:'/cname clear'><color:#fca5a5>[Clear Alias]</color></click>"
+  set-success: "<color:#f9a8d4>❀ Successfully set alias of claim <color:#6fd8e8>#{claimId}</color> to: <color:#ffd166><bold>\"{name}\"</bold></color></color>\n  👉 You can now teleport back anytime via <click:run_command:'/ctp {name}'><hover:show_text:'<gray>Click to teleport</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click>!"
+  cleared: "<color:#f9a8d4>❀ Cleared custom alias of claim <color:#6fd8e8>#{claimId}</color> (reverted to ID #{claimId}).</color>"
+  invalid-name: "<red>Invalid claim alias! Length must be 1-20 characters, cannot be purely numeric, and cannot contain spaces or special symbols.</red>"
+  duplicate-name: "<red>Another claim (#{otherId}) owned by you already uses the alias \"{name}\"! Please choose a different name.</red>"
+  usage: "<yellow>Usage: /cname <alias> or /cname clear or /cname <claimId> <alias></yellow>"
+  list-header: "<color:#f9a8d4><bold>❀ Your Claims List</bold></color><color:#a8a8a8> (Click to teleport)</color>"
+  list-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>Click to teleport to {name}</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[Teleport]</bold></color></hover></click>"
+  claim-blocks-info: "<color:#a8a8a8>Available Claim Blocks: <color:#ffd166><bold>{remaining}</bold></color> / {total} blocks</color>"
+
+teleport:
+  success: "<color:#f9a8d4>❀ Teleported to claim <color:#ffd166><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId})</color> center safe location <color:#a8a8a8>({x}, {y}, {z})</color></color>"
+  no-permission: "<red>You are not the owner or a trusted member of this claim and cannot teleport here.</red>"
+  no-claims: "<yellow>You do not currently own any claims.</yellow>"
+  multiple-claims-hint: "<color:#a8a8a8>You own multiple claims. Use <color:#6fd8e8>/claimtp <name|id></color> to teleport: {claims}</color>"
+  invalid-target: "<red>Cannot find claim named \"{target}\" or with ID #{target}! Type /ctp to view list.</red>"
+  claim-not-found: "<red>Cannot find claim with ID #{claimId}.</red>"
+  success-custom: "<color:#f9a8d4>❀ Teleported to claim <color:#ffd166><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId})</color> custom spawn point <color:#a8a8a8>({x}, {y}, {z})</color></color>"
+  failed: "<red>Teleportation failed. The target location may be unsafe.</red>"
+
+spawn:
+  set: "<color:#f9a8d4>❀ Custom spawn point set at <color:#6fd8e8>({x}, {y}, {z})</color><color:#a8a8a8> (Claim #{claimId})</color></color>\n  👉 Next time <click:run_command:'/ctp'><hover:show_text:'<gray>Click to test teleport</gray>'><color:#6fd8e8><bold>/ctp</bold></color></hover></click> will take you right here."
+  cleared: "<color:#f9a8d4>❀ Custom spawn point for claim <color:#6fd8e8>#{claimId}</color> cleared. /ctp will now use the claim center.</color>"
+  already-default: "<color:#a8a8a8>Claim #{claimId} has no custom spawn point set; /ctp already targets the center.</color>"
+  outside-claim: "<red>You are standing outside this claim! Spawn points can only be set inside your own claim boundaries.</red>"
+  not-in-claim: "<yellow>You are not standing in any claim. Please stand inside your claim and try again.</yellow>"
+  help-header: "<color:#f9a8d4><bold>❀ Claim Spawn Point</bold></color><color:#a8a8a8> (Where /ctp lands)</color>"
+  help-set: "  <click:run_command:'/cspawn'><hover:show_text:'<gray>Set your current location as spawn</gray>'><color:#6fd8e8><bold>[/cspawn]</bold></color> <gray>Stand at the desired spot and run this</gray></hover></click>"
+  help-clear: "  <click:run_command:'/cspawn clear'><hover:show_text:'<gray>Clear custom spawn point</gray>'><color:#fca5a5><bold>[/cspawn clear]</bold></color> <gray>Revert to claim geometric center</gray></hover></click>"
+
+gui:
+  title: "Claim Settings #{claimId}"
+  admin-title: "Claim Settings (Admin) #{claimId}"
+  no-permission: "<red>You do not have permission to modify settings for this claim.</red>"
+  toggled: "<color:#f5f5f5>Updated <color:#6fd8e8>{setting}</color> to: {state}</color>"
+
+  card-status-title: "<color:#ff8fc4><bold>Claim Status</bold></color> <color:#a8a8a8>#{claimId}</color>"
+  card-status-title-named: "<color:#ff8fc4><bold>Claim Status: {alias}</bold></color> <color:#a8a8a8>#{claimId}</color>"
+  card-status-desc: "<gray>Detailed information of the current claim</gray>"
+  card-status-owner: "<dark_gray>Owner</dark_gray> <color:#f5f5f5>{owner}</color>"
+  card-status-alias: "<dark_gray>Alias</dark_gray> <color:#ffd166>{alias}</color>"
+  card-status-no-alias: "<dark_gray>Alias</dark_gray> <color:#a8a8a8>Not set (Use /cname)</color>"
+  card-status-size: "<dark_gray>Size</dark_gray> <color:#f5f5f5>{width} × {height}</color> <color:#a8a8a8>({area} blocks)</color>"
+  card-status-center: "<dark_gray>Center</dark_gray> <color:#a8a8a8>{world} ({x}, {z})</color>"
+  card-status-type: "<dark_gray>Type</dark_gray> <color:#f5f5f5>{type}</color>"
+  card-status-admin-hint: "<color:#fca5a5>※ Admin Mode: Viewing another player's claim</color>"
+
+  type-admin: "Admin Claim"
+  type-subdivision: "Subdivision"
+  type-normal: "Player Claim"
+  owner-admin: "Admin / Server"
+
+  btn-teleport-name-spawn: "<color:#ff8fc4><bold>Teleport to Custom Spawn</bold></color>"
+  btn-teleport-name-center: "<color:#ff8fc4><bold>Teleport to Claim Center</bold></color>"
+  btn-teleport-desc-spawn: "<gray>Click to teleport to your custom spawn point</gray>"
+  btn-teleport-desc-center: "<gray>Click to teleport to the safe center of this claim</gray>"
+  btn-teleport-target: "<dark_gray>Target</dark_gray> <color:#6fd8e8>{target}</color>"
+  btn-teleport-coords: "<dark_gray>Coords</dark_gray> <color:#a8a8a8>({world} {x}, {z})</color>"
+  btn-teleport-action: "<yellow><bold>Left-Click</bold></yellow><white> Teleport Now</white>"
+
+  btn-rename-name: "<color:#ffd166><bold>Set Claim Alias (Rename)</bold></color>"
+  btn-rename-desc: "<gray>Assign a memorable name (e.g. home, farm, shop)</gray>"
+  btn-rename-current: "<dark_gray>Current</dark_gray> <color:#ffd166>{alias}</color>"
+  btn-rename-current-none: "<dark_gray>Current</dark_gray> <color:#a8a8a8>None (Default #{claimId})</color>"
+  btn-rename-benefit: "<dark_gray>Benefit</dark_gray> <color:#6fd8e8>Directly use /ctp <alias> afterwards!</color>"
+  btn-rename-format: "<dark_gray>Format</dark_gray> <color:#a8a8a8>1~20 chars, letters, numbers, underscores</color>"
+  btn-rename-action: "<yellow><bold>Left-Click</bold></yellow><white> Close GUI and type /cname in chat</white>"
+
+  btn-spawn-name: "<color:#ffb7d5><bold>Claim Spawn Point</bold></color>"
+  btn-spawn-desc: "<gray>Configure landing location for /ctp</gray>"
+  btn-spawn-current: "<dark_gray>Current</dark_gray> <color:#6fd8e8>({x}, {y}, {z})</color>"
+  btn-spawn-outside: "<dark_gray>Current</dark_gray> <color:#fca5a5>Outside claim boundary (falls back to center)</color>"
+  btn-spawn-none: "<dark_gray>Current</dark_gray> <color:#a8a8a8>Default (Geometric Center)</color>"
+  btn-spawn-howto: "<dark_gray>How-to</dark_gray> <color:#a8a8a8>Stand at spot and click here or use /cspawn</color>"
+  btn-spawn-action-set: "<yellow><bold>Left-Click</bold></yellow><white> Set spawn to your current location</white>"
+  btn-spawn-action-clear: "<yellow><bold>Right-Click</bold></yellow><white> Clear spawn and revert to center</white>"
+
+  btn-admin-panel-name: "<color:#fca5a5><bold>Server Claims Admin Panel</bold></color>"
+  btn-admin-panel-desc: "<gray>Manage and inspect all server claims</gray>"
+  btn-admin-panel-uuid: "<dark_gray>Owner UUID</dark_gray> <color:#a8a8a8>{uuid}</color>"
+  btn-admin-panel-text: "<dark_gray>Admin</dark_gray> <color:#6fd8e8>Open global claims management panel (/cadmin)</color>"
+  btn-admin-panel-action: "<yellow><bold>Left-Click</bold></yellow><white> Open global claims admin panel</white>"
+
+  footer-help-name: "<color:#ffb7d5><bold>Claim Settings Help</bold></color>"
+  footer-help-lore:
+    - "<gray>Settings apply in real-time across this claim</gray>"
+    - ""
+    - "<dark_gray>Permission</dark_gray> <white>Only owner or admin can edit</white>"
+    - "<dark_gray>Shortcuts</dark_gray> <white>/ctp, /cname, /ctnt, /pvp, /csethome, /cmob</white>"
+
+  footer-close-name: "<color:#a8a8a8><bold>Close Menu</bold></color>"
+  footer-close-action: "<yellow><bold>Left-Click</bold></yellow><white> Close this interface</white>"
+
+settings:
+  current-status: "<dark_gray>Status</dark_gray> {state}"
+  action-hint: "<yellow><bold>Left-Click</bold></yellow><white> {action}</white>"
+
+  tnt:
+    name: "TNT Explosion Damage"
+    desc: "Controls whether TNT explosions can break blocks in this claim"
+    enabled: "<color:#6fd8e8>[Allowed (Damage On)]</color>"
+    disabled: "<color:#a8a8a8>[Blocked (Protected)]</color>"
+    action-enable: "Toggle to allow TNT damage"
+    action-disable: "Toggle to protect blocks from TNT"
+
+  pvp:
+    name: "Claim PvP Combat"
+    desc: "Controls whether players can engage in PvP combat in this claim"
+    enabled: "<color:#6fd8e8>[PvP Enabled]</color>"
+    disabled: "<color:#a8a8a8>[PvP Disabled (Protected)]</color>"
+    action-enable: "Enable PvP combat"
+    action-disable: "Disable PvP combat (Restore protection)"
+
+  sethome:
+    name: "Guest /sethome Permission"
+    desc: "Controls whether untrusted visitors can use /sethome in this claim"
+    enabled: "<color:#6fd8e8>[Allowed for Visitors]</color>"
+    disabled: "<color:#a8a8a8>[Blocked for Visitors (Protected)]</color>"
+    action-enable: "Allow visitors to /sethome"
+    action-disable: "Block visitors from /sethome"
+
+  mob-hostile:
+    name: "Hostile Mobs"
+    desc: "Blocks natural spawning of Zombies, Skeletons, Creepers, etc."
+    enabled: "<color:#6fd8e8>[Spawning Blocked]</color>"
+    disabled: "<color:#a8a8a8>[Natural Spawning]</color>"
+    action-enable: "Block natural spawning"
+    action-disable: "Restore natural spawning"
+
+  mob-raider:
+    name: "Pillager Patrols & Raids"
+    desc: "Blocks natural spawning of Pillager Patrols and Raid parties"
+    enabled: "<color:#6fd8e8>[Spawning Blocked]</color>"
+    disabled: "<color:#a8a8a8>[Natural Spawning]</color>"
+    action-enable: "Block natural spawning"
+    action-disable: "Restore natural spawning"
+
+  mob-phantom:
+    name: "Phantoms (Insomnia)"
+    desc: "Blocks natural spawning of Phantoms above this claim"
+    enabled: "<color:#6fd8e8>[Spawning Blocked]</color>"
+    disabled: "<color:#a8a8a8>[Natural Spawning]</color>"
+    action-enable: "Block natural spawning"
+    action-disable: "Restore natural spawning"
+
+  mob-slime:
+    name: "Slimes & Magma Cubes"
+    desc: "Blocks natural spawning and splitting of Slimes & Magma Cubes"
+    enabled: "<color:#6fd8e8>[Spawning Blocked]</color>"
+    disabled: "<color:#a8a8a8>[Natural Spawning]</color>"
+    action-enable: "Block natural spawning"
+    action-disable: "Restore natural spawning"
+
+  mob-ambient:
+    name: "Ambient Creatures (Bats)"
+    desc: "Blocks natural spawning of bats and ambient creatures"
+    enabled: "<color:#6fd8e8>[Spawning Blocked]</color>"
+    disabled: "<color:#a8a8a8>[Natural Spawning]</color>"
+    action-enable: "Block natural spawning"
+    action-disable: "Restore natural spawning"
+
+admin:
+  list-title: "Claims Management ({page}/{totalPages})"
+  no-claims: "<yellow>There are currently no claims registered on the server.</yellow>"
+  claim-deleted: "<color:#fca5a5>Force deleted claim #{claimId} and purged all associated data.</color>"
+  teleported: "<color:#a8a8a8>[Admin] Teleported to claim #{claimId} center.</color>"
+  help: "<color:#f9a8d4><bold>Admin Claims Management Commands:</bold></color>\n  <color:#6fd8e8>/cadmin</color> <gray>Open global claims management GUI</gray>\n  <color:#6fd8e8>/cadmin list [player]</color> <gray>List claims by player or all</gray>\n  <color:#6fd8e8>/cadmin tp <id|alias></color> <gray>Force teleport to any claim</gray>\n  <color:#6fd8e8>/cadmin delete <id></color> <gray>Force delete a claim</gray>\n  <color:#6fd8e8>/cadmin name <id> <alias|clear></color> <gray>Set or clear alias of any claim</gray>\n  <color:#6fd8e8>/cadmin set <id> <setting> <true|false></color> <gray>Force change claim setting</gray>"
+
+  card-title: "<color:#ff8fc4><bold>Claim #{claimId}</bold></color>"
+  card-title-named: "<color:#ff8fc4><bold>Claim #{claimId}</bold></color> <color:#ffd166>\"{alias}\"</color>"
+  card-type-admin: "<color:#fca5a5>Admin Claim</color>"
+  card-type-sub: "<color:#6fd8e8>Subdivision</color>"
+  card-type-player: "<color:#a7f3d0>Player Claim</color>"
+  card-lore:
+    - "<dark_gray>Type</dark_gray> {type}"
+    - "<dark_gray>Owner</dark_gray> <color:#f5f5f5>{owner}</color>"
+    - "<dark_gray>Size</dark_gray> <color:#f5f5f5>{width} × {height}</color> <color:#a8a8a8>({area} blocks)</color>"
+    - "<dark_gray>Location</dark_gray> <color:#a8a8a8>{world} ({x}, {z})</color>"
+    - "<dark_gray>Status</dark_gray> TNT: {tnt} | PVP: {pvp} | SetHome: {sethome}"
+    - ""
+    - "<yellow><bold>Left-Click</bold></yellow><white> Open claim settings GUI</white>"
+    - "<yellow><bold>Shift+Left-Click</bold></yellow><white> Teleport to this claim</white>"
+
+  stats-name: "<color:#6fd8e8><bold>Global Claims Statistics</bold></color>"
+  stats-lore:
+    - "<gray>Global claims overview</gray>"
+    - ""
+    - "<dark_gray>Total Claims</dark_gray> <color:#ffd166>{total}</color>"
+    - "<dark_gray>Player Claims</dark_gray> <color:#a7f3d0>{player}</color>"
+    - "<dark_gray>Admin Claims</dark_gray> <color:#fca5a5>{admin}</color>"
+    - "<dark_gray>Total Area</dark_gray> <color:#6fd8e8>{area}</color> <color:#a8a8a8>blocks</color>"
+
+  filter-name: "<color:#ffd166><bold>Filter Claims List</bold></color>"
+  filter-all: "Show All Claims"
+  filter-player: "Player Claims Only"
+  filter-admin: "Admin Claims Only"
+  filter-lore:
+    - "<gray>Click to cycle through filter modes</gray>"
+    - ""
+    - "<dark_gray>Current Filter</dark_gray> <color:#ffd166>{current}</color>"
+    - "<dark_gray>Matching Claims</dark_gray> <color:#a8a8a8>{count} claims</color>"
+    - ""
+    - "<yellow><bold>Left-Click</bold></yellow><white> Cycle filter (All → Player → Admin)</white>"
+
+  prev-page-name: "<color:#6fd8e8><bold>Previous Page</bold></color>"
+  prev-page-lore: "<gray>Go to page {page}</gray>"
+  next-page-name: "<color:#6fd8e8><bold>Next Page</bold></color>"
+  next-page-lore: "<gray>Go to page {page}</gray>"
+  page-indicator-name: "<color:#ffd166><bold>Page {page} / {totalPages}</bold></color>"
+  page-indicator-lore: "<gray>{count} total claims</gray>"
+  close-name: "<color:#fca5a5><bold>Close Panel</bold></color>"
+  close-lore: "<gray>Click to close this window</gray>"
+
+  usage-tp: "<yellow>Usage: /cadmin tp <claimId|alias></yellow>"
+  usage-delete: "<yellow>Usage: /cadmin delete <claimId></yellow>"
+  usage-name: "<yellow>Usage: /cadmin name <claimId> <alias|clear></yellow>"
+  usage-set: "<yellow>Usage: /cadmin set <claimId> <setting> <true|false></yellow>"
+  invalid-id: "<red>Invalid claim ID!</red>"
+  invalid-set-args: "<red>Invalid arguments! Please specify a valid claim ID and true/false.</red>"
+  set-success: "<color:#f5f5f5>Force set claim #{claimId} <color:#6fd8e8>{key}</color> to: <color:#ffd166>{value}</color></color>"

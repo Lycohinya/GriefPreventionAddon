@@ -1,8 +1,8 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
-import com.tinyyana.lycoLib.config.Messages
 import me.ryanhamshire.GriefPrevention.GriefPrevention
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -12,34 +12,36 @@ import org.bukkit.entity.Player
 class ClaimsListCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
-    private val messages: Messages,
+    private val lang: LanguageManager,
 ) : CommandExecutor {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         val player = sender as? Player ?: run {
-            sender.sendMessage(messages.get("system.player-only"))
+            sender.sendMessage(lang.get("system.player-only"))
             return true
         }
 
         if (!bridge.isAvailable()) {
-            player.sendMessage(messages.get("claim.gp-missing"))
+            player.sendMessage(lang.get(player, "claim.gp-missing"))
             return true
         }
 
         val playerClaims = bridge.getClaimsForPlayer(player.uniqueId)
         if (playerClaims.isEmpty()) {
-            player.sendMessage(messages.get("teleport.no-claims"))
+            player.sendMessage(lang.get(player, "teleport.no-claims"))
             return true
         }
 
-        player.sendMessage(messages.get("name.list-header"))
+        player.sendMessage(lang.get(player, "name.list-header"))
+        val defaultName = lang.raw(player, "gui.card-status-no-alias") ?: "Unnamed Claim"
         for (claim in playerClaims) {
             val id = claim.id ?: continue
             val alias = store.getAlias(id)
-            val displayName = if (!alias.isNullOrBlank()) alias else "未命名花域"
+            val displayName = if (!alias.isNullOrBlank()) alias else defaultName
             val targetParam = alias ?: id.toString()
             player.sendMessage(
-                messages.get(
+                lang.get(
+                    player,
                     "name.list-entry",
                     "target" to targetParam,
                     "name" to displayName,
@@ -50,13 +52,16 @@ class ClaimsListCommand(
             )
         }
 
-        // 附加顯示 GP 可用格數資訊 (若有)
+        // Available claim blocks
         runCatching {
             val pd = GriefPrevention.instance.dataStore.getPlayerData(player.uniqueId)
             if (pd != null) {
                 val remaining = pd.getRemainingClaimBlocks()
                 val total = pd.accruedClaimBlocks + pd.bonusClaimBlocks
-                player.sendMessage("<color:#a8a8a8>可用花域格數：<color:#ffd166><bold>$remaining</bold></color> / $total 格</color>")
+                val msg = (lang.raw(player, "name.claim-blocks-info") ?: "<color:#a8a8a8>Available Claim Blocks: <color:#ffd166><bold>{remaining}</bold></color> / {total} blocks</color>")
+                    .replace("{remaining}", remaining.toString())
+                    .replace("{total}", total.toString())
+                player.sendMessage(lang.render(msg, false, player))
             }
         }
         return true

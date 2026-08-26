@@ -14,15 +14,12 @@ dependencies {
     compileOnly(libs.paper.api)
     // stdlib 不 shade: runtime 由 plugin.yml 的 libraries 提供
     compileOnly(libs.kotlin.stdlib)
-    // LycoLib 由伺服器以獨立插件載入,不 shade
-    compileOnly("com.tinyyana:LycoLib:0.1.0")
     // GriefPrevention 僅供編譯期參照 API 型別,不 shade;執行期呼叫做 softdepend 存在檢查
     compileOnly(libs.griefprevention.api)
 
     testImplementation(libs.paper.api)
     testImplementation(libs.sqlite.jdbc)
     testImplementation(kotlin("test"))
-    testImplementation("com.tinyyana:LycoLib:0.1.0")
     testImplementation(libs.griefprevention.api)
 }
 

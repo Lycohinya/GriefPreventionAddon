@@ -1,9 +1,9 @@
 package com.tinyyana.griefPreventionAddon.command
 
 import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiService
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
-import com.tinyyana.lycoLib.config.Messages
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -14,17 +14,17 @@ class ClaimSettingsCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
     private val guiService: ClaimSettingsGuiService,
-    private val messages: Messages,
+    private val lang: LanguageManager,
 ) : CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         val player = sender as? Player ?: run {
-            sender.sendMessage(messages.get("system.player-only"))
+            sender.sendMessage(lang.get("system.player-only"))
             return true
         }
 
         if (!bridge.isAvailable()) {
-            player.sendMessage(messages.get("claim.gp-missing"))
+            player.sendMessage(lang.get(player, "claim.gp-missing"))
             return true
         }
 
@@ -38,12 +38,12 @@ class ClaimSettingsCommand(
             val input = args[0]
             val claimId = store.findClaimId(input, player.uniqueId, playerClaims)
             if (claimId == null) {
-                player.sendMessage(messages.get("teleport.invalid-target", "target" to input))
+                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to input))
                 return true
             }
             val target = bridge.getClaim(claimId)
             if (target == null) {
-                player.sendMessage(messages.get("teleport.claim-not-found", "claimId" to claimId.toString()))
+                player.sendMessage(lang.get(player, "teleport.claim-not-found", "claimId" to claimId.toString()))
                 return true
             }
             target
@@ -55,7 +55,7 @@ class ClaimSettingsCommand(
                 if (playerClaims.size == 1) {
                     playerClaims.first()
                 } else {
-                    player.sendMessage(messages.get("claim.not-in-claim"))
+                    player.sendMessage(lang.get(player, "claim.not-in-claim"))
                     return true
                 }
             }
@@ -64,7 +64,7 @@ class ClaimSettingsCommand(
         val isOwner = claim.ownerID == player.uniqueId
         val isTrusted = claim.allowGrantPermission(player) == null || claim.allowAccess(player) == null
         if (!isOwner && !isTrusted && !isAdmin) {
-            player.sendMessage(messages.get("system.no-permission"))
+            player.sendMessage(lang.get(player, "system.no-permission"))
             return true
         }
 
@@ -95,4 +95,3 @@ class ClaimSettingsCommand(
         return emptyList()
     }
 }
-

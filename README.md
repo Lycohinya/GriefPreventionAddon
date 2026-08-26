@@ -1,75 +1,124 @@
-﻿# GriefPreventionAddon
+# GriefPreventionAddon
 
-**Lycohinya 領地擴充與管理插件。** 專為 GriefPrevention 設計的擴充系統，提供領地 TNT 爆炸控制、領地 PVP / 自然生物生成管理、一鍵安全傳送、以及符合伺服器設計規範的花域設定 GUI。
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Minecraft Paper](https://img.shields.io/badge/Minecraft-Paper%20%2F%20Folia%2026.2-brightgreen.svg)](https://papermc.io/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4-purple.svg)](https://kotlinlang.org/)
 
-> Lycohinya 伺服器自製插件，完全相容 **Paper / Folia / Lecithin 26.2** 多執行緒與 regionised 排程架構。硬相依為 **GriefPrevention** 與 **LycoLib**。
+**A modern, feature-rich companion addon for [GriefPrevention](https://github.com/TechFortress/GriefPrevention).**  
+Provides per-claim TNT protection, guest `/sethome` permission management, PvP toggles, natural mob spawning filters, custom claim aliases, fast teleportation, custom landing points, interactive GUI menus, and a global administrative panel.
 
----
-
-## 主要功能
-
-| 功能 | 說明 | 指令 |
-|---|---|---|
-| **TNT 爆炸控制** | 地主自主決定領地是否允許 TNT 破壞方塊，實時過濾爆炸清單，保護禁止領地 | `/ctnt [on\|off\|status]` |
-| **花域設定選單** | 4 列帶狀 Chest GUI，視覺化管理領地狀態、一鍵傳送、TNT、PvP 與 5 類生物 | `/csettings [領地ID]` |
-| **一鍵領地傳送** | 計算領地幾何中心安全地面座標，透過 Folia 異步排程安全傳送 | `/claimtp [領地ID]` (`/ctp`) |
-| **領地 PVP 開關** | 地主自由開關領地內 PVP 戰鬥狀態，附帶全域提示廣播 | `/pvp` |
-| **自然生物生成管理** | 分類開關自然生怪（一般敵對 / 掠奪者 / 夜魅 / 史萊姆 / 蝙蝠），不影響生怪磚與繁殖 | `/cmob [分類]` |
-| **領地資訊查詢** | 顯示當前領地尺寸、主人與狀態，並提供可點擊的傳送與設定捷徑 | `/claiminfo` |
+Supports **Paper**, **Folia**, and **Lecithin 26.2** with asynchronous, thread-safe region scheduling, zero hard dependencies on external libraries, and full multi-language (i18n) localization with auto-detection of player client locales.
 
 ---
 
-## 需求
+## 🌟 Features / 主要功能
 
-| 項目 | 規格 |
-|---|---|
-| 核心平台 | **Paper / Folia / Lecithin 26.2** |
-| Java 版本 | **Java 25** |
-| 硬相依插件 | **GriefPrevention**, **LycoLib** |
-
----
-
-## 指令與權限
-
-### 玩家指令
-
-| 指令 | 別名 | 權限 | 說明 |
+| Feature | Description (English) | 說明 (繁體中文) | Command |
 |---|---|---|---|
-| `/ctnt [on\|off\|status]` | `/claimtnt` | 領地主人或管理員 | 查詢或切換當前花域 TNT 爆炸破壞 |
-| `/csettings [領地ID]` | `/claimsettings` | 領地主人、信任成員或管理員 | 開啟花域設定 GUI 選單 |
-| `/claimtp [領地ID]` | `/ctp`, `/claimteleport` | `griefpreventionaddon.tp` (預設 true) | 一鍵傳送至花域中心安全位置 |
-| `/pvp` | `/pvpinclaim` | 領地主人或管理員 | 切換當前花域 PVP 對戰狀態 |
-| `/cmob [分類]` | `/claimmobs` | 領地主人或管理員 | 切換或開啟生物自然生成設定選單 |
-| `/claiminfo` | 無 | 無 (所有人可用) | 查詢當前站立的花域資訊與快速操作捷徑 |
-
-### 管理員權限
-
-* `griefpreventionaddon.admin`: 管理員全權限（可操作任意玩家領地與所有子指令）。
-* `griefpreventionaddon.tnt.others`: 可修改他人領地的 TNT 設定。
-* `griefpreventionaddon.pvp.others`: 可修改他人領地的 PVP 設定。
-* `griefpreventionaddon.mobs.others`: 可修改他人領地的生物生成設定。
-* `griefpreventionaddon.settings.others`: 可開啟並修改他人領地的設定選單。
-* `griefpreventionaddon.tp.others`: 可傳送至任意玩家的領地中心。
+| **TNT Explosion Control** | Claim owners can allow or block explosion block damage inside their claim. Precise edge-filtering protects boundary blocks. | 地主自主決定領地內是否允許 TNT 爆炸破壞方塊，邊界過濾演算法精準保護領地方塊。 | `/ctnt [on\|off\|status]` |
+| **Guest `/sethome` Control** | Claim owners decide whether untrusted visitors can use `/sethome` in their claim, preventing unauthorized fast travel. | 地主可自由設定是否允許未信任的訪客在自己花域內使用 `/sethome` 設家。 | `/csethome [on\|off\|status]` |
+| **PvP Combat Toggle** | Enable or disable player vs player combat inside the claim with real-time feedback. | 地主可自主開啟或關閉領地內的 PVP 對戰狀態，保護和平玩家。 | `/pvp` (`/pvpinclaim`) |
+| **Natural Mob Filters** | Selectively toggle natural spawning for 5 mob categories (Hostile, Raider, Phantom, Slime, Ambient) without affecting spawners or breeding. | 分類開關自然生怪（一般敵對 / 掠奪者 / 夜魅 / 史萊姆 / 蝙蝠），不影響生怪磚與繁殖。 | `/cmob [category]` |
+| **Fast Claim Teleport** | Instantly teleport to claim centers or custom spawn locations using Folia asynchronous region scheduling. | 透過 Folia 異步排程安全瞬間傳送至花域中心或自訂落腳點。 | `/claimtp [id\|alias]` (`/ctp`) |
+| **Custom Spawn Point** | Claim owners can define their exact standing location as the landing target for `/ctp`. | 地主可將當前站立點設為 `/ctp` 傳送落腳點，隨時自由清除或恢復中心。 | `/cspawn [set\|clear]` |
+| **Claim Aliases & Naming** | Assign memorable names (e.g. `home`, `farm`, `shop`) to claims for convenient teleportation and recognition. | 為領地設定自訂別名（如「主家」、「農場」），支援中英文並可直接用於傳送。 | `/cname [alias\|clear]` |
+| **Interactive GUI Menu** | Chest GUI for intuitive claim settings, renaming, spawn points, and toggle adjustments. | 視覺化箱子選單，直觀管理花域狀態、改名、落腳點、TNT、PvP 與各類生物生成。 | `/csettings [id\|alias]` |
+| **Global Admin Panel** | Multi-page paginated administrative GUI to inspect, filter, search, teleport, edit, or purge all server claims. | 全伺服器管理員面板，具備分頁、篩選、即時搜尋、強制傳送、改名與刪除功能。 | `/cadmin [list\|tp\|delete...]` |
+| **Multi-Language (i18n)** | Full localization support with automatic Minecraft client locale matching (`zh_TW`, `en_US`, etc.). | 完整的國際化多語言架構，依照玩家客戶端語言自動切換繁中與英文。 | Configurable |
 
 ---
 
-## 資料庫與儲存
+## 📋 Requirements / 環境需求
 
-* 使用 WAL 模式 SQLite 資料庫 (`plugins/GriefPreventionAddon/griefPreventionAddon.db`)。
-* 具備記憶體快取層，確保高頻事件（如爆炸過濾、生怪監聽）零延遲 $O(1)$ 查詢。
-* 首次啟動自動自 `LycoServerTweaks` 遷移既有領地 PVP 與生物設定。
+* **Minecraft Core**: Paper, Folia, or Lecithin **26.2** (or compatible Paper API).
+* **Java Runtime**: **Java 25**.
+* **Dependencies**: [GriefPrevention](https://github.com/TechFortress/GriefPrevention) (Soft dependency).
+* **No external proprietary libraries required** — 100% standalone and open-source.
 
 ---
 
-## 建置與測試
+## 🎮 Commands & Permissions / 指令與權限
 
-```bash
-./gradlew build        # 編譯與打包 shadowJar
-./gradlew test         # 執行單元測試 (DB CRUD、TNT 邊界過濾、夜魅錨點算法、傳送座標)
+### Player Commands / 玩家指令
+
+| Command / 指令 | Aliases / 別名 | Permission / 權限 | Description / 說明 |
+|---|---|---|---|
+| `/csettings [id\|alias]` | `/claimsettings`, `/cmenu`, `/claimgui` | `griefpreventionaddon.user` | Open claim settings GUI / 開啟花域設定選單 |
+| `/ctnt [on\|off\|status]` | `/claimtnt` | `griefpreventionaddon.tnt` | Toggle or check TNT explosion damage / 切換 TNT 爆炸破壞 |
+| `/csethome [on\|off\|status]` | `/claimsethome`, `/sethomeinclaim` | `griefpreventionaddon.sethome` | Toggle visitor `/sethome` permission / 切換訪客設家權限 |
+| `/pvp` | `/pvpinclaim`, `/cpvp` | `griefpreventionaddon.user` | Toggle claim PvP combat / 切換領地 PVP 狀態 |
+| `/cmob [category]` | `/claimmobs` | `griefpreventionaddon.user` | Toggle mob natural spawning categories / 切換生物自然生成 |
+| `/claiminfo` | 無 | `griefpreventionaddon.user` | View info & actions for current claim / 查詢當前領地資訊 |
+| `/claimtp [id\|alias]` | `/ctp`, `/claimteleport` | `griefpreventionaddon.tp` | Teleport to claim center or custom spawn / 傳送至花域 |
+| `/claimname [alias\|clear]` | `/cname`, `/claimalias` | `griefpreventionaddon.user` | Set or clear custom claim alias / 設定或清除領地別名 |
+| `/claimspawn [set\|clear]` | `/cspawn`, `/csetspawn` | `griefpreventionaddon.spawn` | Set current spot as claim spawn point / 設定花域落腳點 |
+| `/claimslist` | `/claims`, `/myclaims` | `griefpreventionaddon.user` | List all owned claims with teleport buttons / 列出名下花域 |
+
+### Admin Commands & Permissions / 管理員指令與權限
+
+| Command / 指令 | Permission / 權限 | Description / 說明 |
+|---|---|---|
+| `/cadmin` | `griefpreventionaddon.admin` | Open global claims admin GUI / 開啟全服花域管理面板 |
+| `/cadmin list [player]` | `griefpreventionaddon.admin` | List all claims or claims of a specific player / 檢視特定玩家或全部花域 |
+| `/cadmin tp <id\|alias>` | `griefpreventionaddon.admin` | Force teleport to any claim / 強制傳送至任意花域 |
+| `/cadmin delete <id>` | `griefpreventionaddon.admin` | Force delete claim and purge database records / 強制刪除花域與設定 |
+| `/cadmin name <id> <alias\|clear>` | `griefpreventionaddon.admin` | Modify alias of any claim / 設定或清除任意花域別名 |
+| `/cadmin set <id> <key> <true\|false>` | `griefpreventionaddon.admin` | Force toggle a claim setting key / 強制設定花域開關數值 |
+
+---
+
+## ⚙️ Configuration & Localization / 設定與多語言
+
+The plugin stores configuration in `plugins/GriefPreventionAddon/config.yml`:
+
+```yaml
+locale:
+  # Default fallback language (zh_TW, en_US, etc.)
+  default-language: "zh_TW"
+  # Auto detect and match player client locale
+  auto-detect-client-locale: true
+
+tnt:
+  default-allowed: false
+
+pvp:
+  default-allowed: false
+
+sethome:
+  default-allowed: false
 ```
 
+Language files are located in `plugins/GriefPreventionAddon/languages/`:
+- `messages_zh_TW.yml` (Traditional Chinese)
+- `messages_en_US.yml` (English)
+
+All user-facing messages, GUI items, titles, and card descriptions use MiniMessage formatting and can be customized without compiling.
+
 ---
 
-## 授權
+## 🛠️ Building & Testing / 建置與測試
 
-TinyYana · [tinyyana.com](https://tinyyana.com)
+Build requirements: JDK 25.
+
+```bash
+# Clone the repository
+git clone https://github.com/TinyYana/Lycohinya.git
+cd Lycohinya/LycohinyaPlugins/GriefPreventionAddon
+
+# Run full unit tests
+./gradlew test
+
+# Compile and package standalone shadowJar
+./gradlew build
+```
+
+The output JAR will be generated in `build/libs/GriefPreventionAddon-0.3.0.jar`.
+
+---
+
+## 📄 License / 授權條款
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.  
+See the [LICENSE](LICENSE) file for details.
+
+Developed by [TinyYana](https://tinyyana.com).

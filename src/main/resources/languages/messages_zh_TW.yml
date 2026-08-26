@@ -1,0 +1,280 @@
+system:
+  player-only: "<red>只有在線玩家能使用這個指令。</red>"
+  prefix: "<color:#f9a8d4>[花域]</color> "
+  no-permission: "<red>你沒有權限執行此指令或進行此項操作。</red>"
+  invalid-args: "<red>指令參數錯誤，請確認輸入格式。</red>"
+
+claim:
+  gp-missing: "<red>領地系統 (GriefPrevention) 未安裝或未啟用。</red>"
+  not-in-claim: "<yellow>你目前沒有站在任何花域內。</yellow>"
+  not-owner: "<red>你不是這塊花域的主人，沒有權限修改設定。</red>"
+  save-failed: "<red>花域設定儲存失敗，請回報管理員。</red>"
+
+tnt:
+  allowed: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>允許</bold></color> TNT 爆炸破壞方塊。</color>"
+  blocked: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>禁止</bold></color> TNT 爆炸破壞方塊。</color>"
+  status-on: "<color:#f5f5f5>花域 <color:#6fd8e8>#{claimId}</color> 的 TNT 爆炸目前為：<color:#6fd8e8><bold>允許破壞</bold></color></color>"
+  status-off: "<color:#f5f5f5>花域 <color:#6fd8e8>#{claimId}</color> 的 TNT 爆炸目前為：<color:#a8a8a8><bold>受到保護 (禁止破壞)</bold></color></color>"
+  toggled-by-admin: "<color:#a8a8a8>[管理員 {admin} 將花域 #{claimId} 的 TNT 設定改為 {state}]</color>"
+
+pvp:
+  allowed: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>開放</bold></color> PVP 對戰，請注意安全！</color>"
+  blocked: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>關閉</bold></color> PVP 對戰，恢復領地保護。</color>"
+
+sethome:
+  allowed: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>允許</bold></color>訪客使用 /sethome 設定傳送點。</color>"
+  blocked: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>禁止</bold></color>訪客使用 /sethome 設定傳送點。</color>"
+  status-on: "<color:#f5f5f5>花域 <color:#6fd8e8>#{claimId}</color> 的訪客設家目前為：<color:#6fd8e8><bold>允許訪客設家</bold></color></color>"
+  status-off: "<color:#f5f5f5>花域 <color:#6fd8e8>#{claimId}</color> 的訪客設家目前為：<color:#a8a8a8><bold>受到保護 (禁止訪客設家)</bold></color></color>"
+  blocked-in-claim: "<red>該花域地主未開放訪客在此設定家 (/sethome)。</red>"
+
+mobs:
+  category-on: "<color:#f9a8d4>這塊花域已<color:#6fd8e8><bold>禁止</bold></color>生成 {label}。</color>"
+  category-off: "<color:#f9a8d4>這塊花域已<color:#a8a8a8><bold>恢復</bold></color>生成 {label}。</color>"
+  menu-header: "<color:#f9a8d4><bold>花域生物生成開關</bold></color><color:#a8a8a8> (點擊或 /cmob <類別> 切換)</color>"
+  menu-line: "  <click:run_command:/cmob {cmd}><hover:show_text:'<gray>點擊切換 {label}</gray>'>{state} <color:#f5f5f5>{label}</color> <color:#6fd8e8>[/cmob {cmd}]</color></hover></click>"
+  state-on: "<color:#6fd8e8>[已禁止]</color>"
+  state-off: "<color:#a8a8a8>[自然生成]</color>"
+  menu-hint: "<color:#a8a8a8>※ 只影響自然生成的生物，生怪磚/生怪蛋/繁殖/指令不受影響。</color>"
+  cat-hostile: "一般敵對(殭屍/骷髏/苦力怕)"
+  cat-raider: "掠奪者巡邏與襲擊"
+  cat-phantom: "夜魅"
+  cat-slime: "史萊姆與岩漿立方怪"
+  cat-ambient: "蝙蝠"
+
+claim-info:
+  wilderness: "<yellow>你目前站在野外（無主荒野）。</yellow>"
+  admin-claim: "<color:#f9a8d4><bold>管理員花域</bold></color> <color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
+  owned: "<color:#f9a8d4><bold>{owner}</bold></color><color:#f5f5f5> 的花域</color> {alias}<color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
+  actions: "  <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>點擊瞬間傳送至此花域中心</gray>'><color:#6fd8e8><bold>[傳送至此花域]</bold></color></hover></click>   <click:run_command:/csettings {claimId}><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#f9a8d4><bold>[開啟設定選單]</bold></color></hover></click>   <click:suggest_command:'/cname '><hover:show_text:'<gray>設定此花域的自訂別名 (中英皆可)</gray>'><color:#ffd166><bold>[設定別名]</bold></color></hover></click>"
+  open-gui: "<click:run_command:/csettings><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#6fd8e8><bold>[點此開啟花域設定選單]</bold></color></hover></click>"
+
+name:
+  guide-header: "<color:#f9a8d4><bold>❀ 花域別名 (自訂名稱) 設定教學</bold></color>"
+  guide-current: "  <dark_gray>目前花域：</dark_gray><color:#ffd166>{name}</color> <color:#a8a8a8>(#{claimId})</color>"
+  guide-current-none: "  <dark_gray>目前所在：</dark_gray><color:#a8a8a8>無主荒野或非本人花域</color>"
+  guide-line-set: "  <click:suggest_command:'/cname '><hover:show_text:'<gray>點擊在聊天框填寫指令</gray>'><color:#6fd8e8><bold>[/cname <名稱>]</bold></color> <gray>設定目前花域的別名 (例：/cname 主家、/cname farm)</gray></hover></click>"
+  guide-line-clear: "  <click:run_command:'/cname clear'><hover:show_text:'<gray>點擊清除目前花域別名</gray>'><color:#fca5a5><bold>[/cname clear]</bold></color> <gray>清除目前花域的別名</gray></hover></click>"
+  guide-line-id: "  <click:suggest_command:'/cname 1 '><hover:show_text:'<gray>點擊在聊天框填寫指令</gray>'><color:#ffd166><bold>[/cname <編號> <名稱>]</bold></color> <gray>為指定編號的花域設定別名</gray></hover></click>"
+  guide-quick-prompt: "  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[點此填寫 /cname <新名稱>]</bold></color></click>   <click:suggest_command:'/cname 主家'><color:#ffd166>[/cname 主家]</color></click>   <click:suggest_command:'/cname 農場'><color:#ffd166>[/cname 農場]</color></click>   <click:run_command:'/claimslist'><color:#a8a8a8>[查看花域清單]</color></click>"
+  gui-prompt-header: "<color:#f9a8d4><bold>❀ 請在聊天框輸入欲設定的花域別名：</bold></color>"
+  gui-prompt-actions: "  目前花域：<color:#ffd166>{current}</color> (#{claimId})\n  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[點擊填寫 /cname <新別名>]</bold></color></click>   <click:suggest_command:'/cname 主家'><color:#ffd166>[主家]</color></click>   <click:suggest_command:'/cname 農場'><color:#ffd166>[農場]</color></click>   <click:run_command:'/cname clear'><color:#fca5a5>[清除別名]</color></click>"
+  set-success: "<color:#f9a8d4>❀ 成功將花域 <color:#6fd8e8>#{claimId}</color> 的別名設定為：<color:#ffd166><bold>「{name}」</bold></color></color>\n  👉 現在你可以隨時輸入 <click:run_command:'/ctp {name}'><hover:show_text:'<gray>點擊立即傳送</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click> 瞬間傳送回來！"
+  cleared: "<color:#f9a8d4>❀ 已清除花域 <color:#6fd8e8>#{claimId}</color> 的自訂別名（恢復使用編號 #{claimId}）。</color>"
+  invalid-name: "<red>無效的花域別名！長度需為 1-20 字元，不可為純數字或包含斜線、空格等特殊符號。</red>"
+  duplicate-name: "<red>你名下的另一塊花域 (#{otherId}) 已經使用了「{name}」這個別名！請使用不同名稱。</red>"
+  usage: "<yellow>用法：/cname <別名> 或 /cname clear (清除別名) 或 /cname <編號> <別名></yellow>"
+  list-header: "<color:#f9a8d4><bold>❀ 你的花域清單</bold></color><color:#a8a8a8> (點擊即可傳送)</color>"
+  list-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>點擊傳送至 {name}</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[傳送]</bold></color></hover></click>"
+  claim-blocks-info: "<color:#a8a8a8>可用花域格數：<color:#ffd166><bold>{remaining}</bold></color> / {total} 格</color>"
+
+teleport:
+  success: "<color:#f9a8d4>❀ 已傳送至花域 <color:#ffd166><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId})</color> 中心安全位置 <color:#a8a8a8>({x}, {y}, {z})</color></color>"
+  no-permission: "<red>你不是這塊花域的地主或信任成員，無法傳送至此。</red>"
+  no-claims: "<yellow>你目前沒有擁有任何花域。</yellow>"
+  multiple-claims-hint: "<color:#a8a8a8>你擁有多塊花域，可使用 <color:#6fd8e8>/claimtp <名稱或編號></color> 傳送至特定花域：{claims}</color>"
+  invalid-target: "<red>找不到名為「{target}」或編號為 #{target} 的花域！輸入 /ctp 查看可用清單。</red>"
+  claim-not-found: "<red>找不到編號為 #{claimId} 的花域。</red>"
+  success-custom: "<color:#f9a8d4>❀ 已傳送至花域 <color:#ffd166><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId})</color> 的落腳點 <color:#a8a8a8>({x}, {y}, {z})</color></color>"
+  failed: "<red>傳送失敗，目標花域可能處於不安全區域。</red>"
+
+spawn:
+  set: "<color:#f9a8d4>❀ 已把落腳點設在 <color:#6fd8e8>({x}, {y}, {z})</color><color:#a8a8a8> (花域 #{claimId})</color></color>\n  👉 之後 <click:run_command:'/ctp'><hover:show_text:'<gray>點擊立即試傳一次</gray>'><color:#6fd8e8><bold>/ctp</bold></color></hover></click> 就會直接落在這裡"
+  cleared: "<color:#f9a8d4>❀ 已清除花域 <color:#6fd8e8>#{claimId}</color> 的落腳點,之後 /ctp 會回到花域中心</color>"
+  already-default: "<color:#a8a8a8>這塊花域(#{claimId})本來就沒有設落腳點,/ctp 會傳到中心</color>"
+  outside-claim: "<red>你現在站的位置不在這塊花域裡,落腳點只能設在自己的花域範圍內</red>"
+  not-in-claim: "<yellow>你目前沒有站在任何花域內,站進自己的花域再輸入一次</yellow>"
+  help-header: "<color:#f9a8d4><bold>❀ 花域落腳點</bold></color><color:#a8a8a8> (/ctp 傳送過來時要落在哪裡)</color>"
+  help-set: "  <click:run_command:'/cspawn'><hover:show_text:'<gray>把現在站的位置設成落腳點</gray>'><color:#6fd8e8><bold>[/cspawn]</bold></color> <gray>站到想要的位置,再輸入這個</gray></hover></click>"
+  help-clear: "  <click:run_command:'/cspawn clear'><hover:show_text:'<gray>清除落腳點,恢復用花域中心</gray>'><color:#fca5a5><bold>[/cspawn clear]</bold></color> <gray>恢復成傳到花域中心</gray></hover></click>"
+
+gui:
+  title: "花域設定 #{claimId}"
+  admin-title: "花域設定 (管理員) #{claimId}"
+  no-permission: "<red>你沒有權限修改這塊花域的設定。</red>"
+  toggled: "<color:#f5f5f5>已將 <color:#6fd8e8>{setting}</color> 切換為：{state}</color>"
+  
+  card-status-title: "<color:#ff8fc4><bold>花域狀態</bold></color> <color:#a8a8a8>#{claimId}</color>"
+  card-status-title-named: "<color:#ff8fc4><bold>花域狀態: {alias}</bold></color> <color:#a8a8a8>#{claimId}</color>"
+  card-status-desc: "<gray>你目前所在的花域領地詳細資料</gray>"
+  card-status-owner: "<dark_gray>地主</dark_gray> <color:#f5f5f5>{owner}</color>"
+  card-status-alias: "<dark_gray>別名</dark_gray> <color:#ffd166>{alias}</color>"
+  card-status-no-alias: "<dark_gray>別名</dark_gray> <color:#a8a8a8>未設定 (輸入 /cname 設定)</color>"
+  card-status-size: "<dark_gray>尺寸</dark_gray> <color:#f5f5f5>{width} × {height}</color> <color:#a8a8a8>({area} 格)</color>"
+  card-status-center: "<dark_gray>中心</dark_gray> <color:#a8a8a8>{world} ({x}, {z})</color>"
+  card-status-type: "<dark_gray>類型</dark_gray> <color:#f5f5f5>{type}</color>"
+  card-status-admin-hint: "<color:#fca5a5>※ 管理員模式：正在查看他人花域</color>"
+  
+  type-admin: "管理員花域"
+  type-subdivision: "子花域"
+  type-normal: "一般花域"
+  owner-admin: "管理員 / 公共"
+
+  btn-teleport-name-spawn: "<color:#ff8fc4><bold>傳送至花域落腳點</bold></color>"
+  btn-teleport-name-center: "<color:#ff8fc4><bold>傳送至花域中心</bold></color>"
+  btn-teleport-desc-spawn: "<gray>點擊傳送到你自己設定的落腳點</gray>"
+  btn-teleport-desc-center: "<gray>點擊瞬間傳送至此花域的中心安全地面</gray>"
+  btn-teleport-target: "<dark_gray>目標</dark_gray> <color:#6fd8e8>{target}</color>"
+  btn-teleport-coords: "<dark_gray>座標</dark_gray> <color:#a8a8a8>({world} {x}, {z})</color>"
+  btn-teleport-action: "<yellow><bold>左鍵</bold></yellow><white> 立即傳送</white>"
+
+  btn-rename-name: "<color:#ffd166><bold>設定花域別名 (改名)</bold></color>"
+  btn-rename-desc: "<gray>為這塊花域設定好記的名字（如主家、農場、商店）</gray>"
+  btn-rename-current: "<dark_gray>目前別名</dark_gray> <color:#ffd166>{alias}</color>"
+  btn-rename-current-none: "<dark_gray>目前別名</dark_gray> <color:#a8a8a8>未設定 (預設 #{claimId})</color>"
+  btn-rename-benefit: "<dark_gray>命名好處</dark_gray> <color:#6fd8e8>之後可直接輸入 /ctp <別名> 傳送！</color>"
+  btn-rename-format: "<dark_gray>格式限制</dark_gray> <color:#a8a8a8>1~20 字元，支援中英文、數字、底線</color>"
+  btn-rename-action: "<yellow><bold>左鍵</bold></yellow><white> 點擊關閉選單並在聊天框輸入 /cname</white>"
+
+  btn-spawn-name: "<color:#ffb7d5><bold>花域落腳點</bold></color>"
+  btn-spawn-desc: "<gray>指定 /ctp 傳送過來時要落在哪裡,不設就是花域中心地面</gray>"
+  btn-spawn-current: "<dark_gray>目前落腳點</dark_gray> <color:#6fd8e8>({x}, {y}, {z})</color>"
+  btn-spawn-outside: "<dark_gray>目前落腳點</dark_gray> <color:#fca5a5>已在花域範圍外,傳送會退回中心</color>"
+  btn-spawn-none: "<dark_gray>目前落腳點</dark_gray> <color:#a8a8a8>未設定 (使用花域中心)</color>"
+  btn-spawn-howto: "<dark_gray>怎麼設</dark_gray> <color:#a8a8a8>站到想要的位置,再按這一格或輸入 /cspawn</color>"
+  btn-spawn-action-set: "<yellow><bold>左鍵</bold></yellow><white> 把你現在站的位置設成落腳點</white>"
+  btn-spawn-action-clear: "<yellow><bold>右鍵</bold></yellow><white> 清除落腳點,恢復用花域中心</white>"
+
+  btn-admin-panel-name: "<color:#fca5a5><bold>全服花域管理面板</bold></color>"
+  btn-admin-panel-desc: "<gray>以管理員身分管理與檢視伺服器所有花域</gray>"
+  btn-admin-panel-uuid: "<dark_gray>地主 UUID</dark_gray> <color:#a8a8a8>{uuid}</color>"
+  btn-admin-panel-text: "<dark_gray>全服管理</dark_gray> <color:#6fd8e8>開啟全伺服器花域管理面板 (/cadmin)</color>"
+  btn-admin-panel-action: "<yellow><bold>左鍵</bold></yellow><white> 開啟全伺服器花域管理面板</white>"
+
+  footer-help-name: "<color:#ffb7d5><bold>花域設定說明</bold></color>"
+  footer-help-lore:
+    - "<gray>領地設定會即時套用於整塊花域</gray>"
+    - ""
+    - "<dark_gray>權限</dark_gray> <white>僅地主或管理員可變更設定</white>"
+    - "<dark_gray>快捷</dark_gray> <white>可用 /ctp、/cname、/ctnt、/pvp、/csethome、/cmob</white>"
+
+  footer-close-name: "<color:#a8a8a8><bold>關閉選單</bold></color>"
+  footer-close-action: "<yellow><bold>左鍵</bold></yellow><white> 關閉設定介面</white>"
+
+settings:
+  current-status: "<dark_gray>目前狀態</dark_gray> {state}"
+  action-hint: "<yellow><bold>左鍵</bold></yellow><white> {action}</white>"
+
+  tnt:
+    name: "TNT 爆炸破壞"
+    desc: "控制 TNT 爆炸是否能破壞此花域內的方塊"
+    enabled: "<color:#6fd8e8>[允許破壞]</color>"
+    disabled: "<color:#a8a8a8>[禁止破壞 (保護)]</color>"
+    action-enable: "切換為允許破壞"
+    action-disable: "切換為受到保護"
+
+  pvp:
+    name: "領地 PVP 對戰"
+    desc: "控制玩家在此花域內是否能互相造成傷害"
+    enabled: "<color:#6fd8e8>[開放 PVP]</color>"
+    disabled: "<color:#a8a8a8>[禁止 PVP (保護)]</color>"
+    action-enable: "開放 PVP 對戰"
+    action-disable: "切換為領地保護"
+
+  sethome:
+    name: "訪客設家權限 (/sethome)"
+    desc: "控制未信任的訪客是否能在這塊花域內使用 /sethome 設傳送點"
+    enabled: "<color:#6fd8e8>[允許訪客設家]</color>"
+    disabled: "<color:#a8a8a8>[禁止訪客設家 (保護)]</color>"
+    action-enable: "允許訪客設家"
+    action-disable: "禁止訪客設家"
+
+  mob-hostile:
+    name: "一般敵對生物"
+    desc: "禁止殭屍、骷髏、苦力怕等一般敵對生物自然生成"
+    enabled: "<color:#6fd8e8>[已禁止生成]</color>"
+    disabled: "<color:#a8a8a8>[自然生成]</color>"
+    action-enable: "禁止自然生成"
+    action-disable: "恢復自然生成"
+
+  mob-raider:
+    name: "掠奪者巡邏隊"
+    desc: "禁止災厄巡邏隊與襲擊部隊自然生成"
+    enabled: "<color:#6fd8e8>[已禁止生成]</color>"
+    disabled: "<color:#a8a8a8>[自然生成]</color>"
+    action-enable: "禁止自然生成"
+    action-disable: "恢復自然生成"
+
+  mob-phantom:
+    name: "失眠夜魅"
+    desc: "禁止因失眠而產生的夜魅在花域上空生成"
+    enabled: "<color:#6fd8e8>[已禁止生成]</color>"
+    disabled: "<color:#a8a8a8>[自然生成]</color>"
+    action-enable: "禁止自然生成"
+    action-disable: "恢復自然生成"
+
+  mob-slime:
+    name: "史萊姆與岩漿立方怪"
+    desc: "禁止史萊姆與岩漿立方怪自然生成與分裂"
+    enabled: "<color:#6fd8e8>[已禁止生成]</color>"
+    disabled: "<color:#a8a8a8>[自然生成]</color>"
+    action-enable: "禁止自然生成"
+    action-disable: "恢復自然生成"
+
+  mob-ambient:
+    name: "環境生物 (蝙蝠)"
+    desc: "禁止蝙蝠等環境生物在花域內自然生成"
+    enabled: "<color:#6fd8e8>[已禁止生成]</color>"
+    disabled: "<color:#a8a8a8>[自然生成]</color>"
+    action-enable: "禁止自然生成"
+    action-disable: "恢復自然生成"
+
+admin:
+  list-title: "全服花域管理面板 ({page}/{totalPages})"
+  no-claims: "<yellow>伺服器目前沒有任何已建立的花域。</yellow>"
+  claim-deleted: "<color:#fca5a5>已強制刪除花域 #{claimId} 並清除所有設定記錄。</color>"
+  teleported: "<color:#a8a8a8>[管理員模式] 已瞬間傳送至花域 #{claimId} 中心。</color>"
+  help: "<color:#f9a8d4><bold>管理員花域管理指令：</bold></color>\n  <color:#6fd8e8>/cadmin</color> <gray>開啟全服花域管理面板</gray>\n  <color:#6fd8e8>/cadmin list [玩家]</color> <gray>檢視特定玩家或全部花域</gray>\n  <color:#6fd8e8>/cadmin tp <編號|別名></color> <gray>強制傳送至任意花域</gray>\n  <color:#6fd8e8>/cadmin delete <編號></color> <gray>強制刪除指定花域</gray>\n  <color:#6fd8e8>/cadmin name <編號> <別名|clear></color> <gray>設定或清除任意花域別名</gray>\n  <color:#6fd8e8>/cadmin set <編號> <設定> <true|false></color> <gray>強制修改花域設定</gray>"
+  
+  card-title: "<color:#ff8fc4><bold>花域 #{claimId}</bold></color>"
+  card-title-named: "<color:#ff8fc4><bold>花域 #{claimId}</bold></color> <color:#ffd166>「{alias}」</color>"
+  card-type-admin: "<color:#fca5a5>管理員領地</color>"
+  card-type-sub: "<color:#6fd8e8>子花域</color>"
+  card-type-player: "<color:#a7f3d0>玩家花域</color>"
+  card-lore:
+    - "<dark_gray>類型</dark_gray> {type}"
+    - "<dark_gray>地主</dark_gray> <color:#f5f5f5>{owner}</color>"
+    - "<dark_gray>尺寸</dark_gray> <color:#f5f5f5>{width} × {height}</color> <color:#a8a8a8>({area} 格)</color>"
+    - "<dark_gray>位置</dark_gray> <color:#a8a8a8>{world} ({x}, {z})</color>"
+    - "<dark_gray>狀態</dark_gray> TNT: {tnt} | PVP: {pvp} | 設家: {sethome}"
+    - ""
+    - "<yellow><bold>左鍵</bold></yellow><white> 開啟花域管理設定</white>"
+    - "<yellow><bold>Shift+左鍵</bold></yellow><white> 瞬間傳送至此花域</white>"
+
+  stats-name: "<color:#6fd8e8><bold>花域總體統計</bold></color>"
+  stats-lore:
+    - "<gray>伺服器花域全局統計資料</gray>"
+    - ""
+    - "<dark_gray>花域總數</dark_gray> <color:#ffd166>{total}</color> <color:#a8a8a8>個</color>"
+    - "<dark_gray>玩家花域</dark_gray> <color:#a7f3d0>{player}</color> <color:#a8a8a8>個</color>"
+    - "<dark_gray>管理員花域</dark_gray> <color:#fca5a5>{admin}</color> <color:#a8a8a8>個</color>"
+    - "<dark_gray>受保護總面積</dark_gray> <color:#6fd8e8>{area}</color> <color:#a8a8a8>格</color>"
+
+  filter-name: "<color:#ffd166><bold>篩選花域清單</bold></color>"
+  filter-all: "顯示全部花域"
+  filter-player: "僅玩家花域"
+  filter-admin: "僅管理員花域"
+  filter-lore:
+    - "<gray>點擊切換清單篩選條件</gray>"
+    - ""
+    - "<dark_gray>目前篩選</dark_gray> <color:#ffd166>{current}</color>"
+    - "<dark_gray>匹配結果</dark_gray> <color:#a8a8a8>{count} 個花域</color>"
+    - ""
+    - "<yellow><bold>左鍵</bold></yellow><white> 切換篩選 (全部 → 玩家 → 管理員)</white>"
+
+  prev-page-name: "<color:#6fd8e8><bold>上一頁</bold></color>"
+  prev-page-lore: "<gray>前往第 {page} 頁</gray>"
+  next-page-name: "<color:#6fd8e8><bold>下一頁</bold></color>"
+  next-page-lore: "<gray>前往第 {page} 頁</gray>"
+  page-indicator-name: "<color:#ffd166><bold>第 {page} / {totalPages} 頁</bold></color>"
+  page-indicator-lore: "<gray>共 {count} 筆花域資料</gray>"
+  close-name: "<color:#fca5a5><bold>關閉面板</bold></color>"
+  close-lore: "<gray>點擊關閉此管理視窗</gray>"
+
+  usage-tp: "<yellow>用法：/cadmin tp <花域編號或別名></yellow>"
+  usage-delete: "<yellow>用法：/cadmin delete <花域編號></yellow>"
+  usage-name: "<yellow>用法：/cadmin name <花域編號> <新別名|clear></yellow>"
+  usage-set: "<yellow>用法：/cadmin set <花域編號> <設定項> <true|false></yellow>"
+  invalid-id: "<red>無效的花域編號！</red>"
+  invalid-set-args: "<red>參數格式錯誤！請提供正確的花域編號與 true/false。</red>"
+  set-success: "<color:#f5f5f5>已將花域 #{claimId} 的 <color:#6fd8e8>{key}</color> 強制設定為：<color:#ffd166>{value}</color></color>"

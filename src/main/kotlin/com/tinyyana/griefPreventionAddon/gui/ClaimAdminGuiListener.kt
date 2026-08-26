@@ -1,11 +1,11 @@
 package com.tinyyana.griefPreventionAddon.gui
 
+import com.tinyyana.griefPreventionAddon.gui.menu.MenuSize
+import com.tinyyana.griefPreventionAddon.gui.menu.NavigationSlots
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
-import com.tinyyana.lycoLib.config.Messages
-import com.tinyyana.lycoLib.menu.MenuSize
-import com.tinyyana.lycoLib.menu.NavigationSlots
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -19,7 +19,7 @@ class ClaimAdminGuiListener(
     private val settingsGuiService: ClaimSettingsGuiService,
     private val bridge: GriefPreventionBridge,
     private val teleportService: ClaimTeleportService,
-    private val messages: Messages,
+    private val lang: LanguageManager,
 ) : Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -31,28 +31,28 @@ class ClaimAdminGuiListener(
         if (event.clickedInventory != event.view.topInventory) return
         val nav = NavigationSlots.resolve(MenuSize.LARGE)
 
-        // 1. 關閉按鈕
+        // 1. Close button
         if (event.slot == nav.rightClose) {
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.0f)
             player.closeInventory()
             return
         }
 
-        // 2. 上一頁
+        // 2. Previous page
         if (event.slot == nav.previousPage && holder.page > 1) {
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
             adminGuiService.open(player, holder.page - 1, holder.filterType, holder.targetPlayerName)
             return
         }
 
-        // 3. 下一頁
+        // 3. Next page
         if (event.slot == nav.nextPage && holder.page < holder.totalPages) {
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
             adminGuiService.open(player, holder.page + 1, holder.filterType, holder.targetPlayerName)
             return
         }
 
-        // 4. 切換篩選條件 (Slot 38)
+        // 4. Cycle Filter (Slot 38)
         if (event.slot == ClaimAdminListGuiService.FILTER_SLOT) {
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
             val nextFilter = when (holder.filterType) {
@@ -64,19 +64,19 @@ class ClaimAdminGuiListener(
             return
         }
 
-        // 5. 點擊領地卡片 (0 ~ 35)
+        // 5. Claim Cards (0 ~ 35)
         if (event.slot in 0 until holder.pageClaims.size) {
             val claim = holder.pageClaims[event.slot]
             val claimId = claim.id ?: return
 
             if (event.isShiftClick) {
-                // Shift+左鍵: 瞬間傳送
-                player.sendMessage(messages.get("admin.teleported", "claimId" to claimId.toString()))
+                // Shift+Left-Click: Fast teleport
+                player.sendMessage(lang.get(player, "admin.teleported", "claimId" to claimId.toString()))
                 teleportService.teleport(player, claim, closeInventory = true)
                 return
             }
 
-            // 左鍵: 開啟領地設定 GUI (管理員模式)
+            // Left-Click: Open claim settings GUI in admin mode
             val info = ClaimInfoResult(
                 claimId = claimId,
                 ownerName = claim.ownerName,

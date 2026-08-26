@@ -1,9 +1,9 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
-import com.tinyyana.lycoLib.config.Messages
 import me.ryanhamshire.GriefPrevention.Claim
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -15,42 +15,39 @@ class ClaimTpCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
     private val teleportService: ClaimTeleportService,
-    private val messages: Messages,
+    private val lang: LanguageManager,
 ) : CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         val player = sender as? Player ?: run {
-            sender.sendMessage(messages.get("system.player-only"))
+            sender.sendMessage(lang.get("system.player-only"))
             return true
         }
 
         if (!bridge.isAvailable()) {
-            player.sendMessage(messages.get("claim.gp-missing"))
+            player.sendMessage(lang.get(player, "claim.gp-missing"))
             return true
         }
 
         val playerClaims = bridge.getClaimsForPlayer(player.uniqueId)
 
         if (args.isEmpty()) {
-            // 若玩家當前站在領地內，直接傳送到當前領地中心
             val currentClaim = bridge.getTopClaim(player.location)
             if (currentClaim != null) {
                 teleportService.teleport(player, currentClaim)
                 return true
             }
 
-            // 若在野外且僅有 1 塊領地，直接傳送
             if (playerClaims.size == 1) {
                 teleportService.teleport(player, playerClaims.first())
                 return true
             }
 
             if (playerClaims.isEmpty()) {
-                player.sendMessage(messages.get("teleport.no-claims"))
+                player.sendMessage(lang.get(player, "teleport.no-claims"))
                 return true
             }
 
-            // 擁有多塊領地：輸出帶有別名與點擊傳送的清單
             sendClaimsList(player, playerClaims)
             return true
         }
@@ -59,7 +56,7 @@ class ClaimTpCommand(
         val claimId = store.findClaimId(input, player.uniqueId, playerClaims)
 
         if (claimId == null) {
-            player.sendMessage(messages.get("teleport.invalid-target", "target" to input))
+            player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to input))
             if (playerClaims.isNotEmpty()) {
                 sendClaimsList(player, playerClaims)
             }
@@ -68,7 +65,7 @@ class ClaimTpCommand(
 
         val claim = bridge.getClaim(claimId)
         if (claim == null) {
-            player.sendMessage(messages.get("teleport.claim-not-found", "claimId" to claimId.toString()))
+            player.sendMessage(lang.get(player, "teleport.claim-not-found", "claimId" to claimId.toString()))
             return true
         }
 
@@ -77,14 +74,16 @@ class ClaimTpCommand(
     }
 
     private fun sendClaimsList(player: Player, claims: List<Claim>) {
-        player.sendMessage(messages.get("name.list-header"))
+        player.sendMessage(lang.get(player, "name.list-header"))
+        val defaultName = lang.raw(player, "gui.card-status-no-alias") ?: "Unnamed Claim"
         for (claim in claims) {
             val id = claim.id ?: continue
             val alias = store.getAlias(id)
-            val displayName = if (!alias.isNullOrBlank()) alias else "未命名花域"
+            val displayName = if (!alias.isNullOrBlank()) alias else defaultName
             val targetParam = alias ?: id.toString()
             player.sendMessage(
-                messages.get(
+                lang.get(
+                    player,
                     "name.list-entry",
                     "target" to targetParam,
                     "name" to displayName,

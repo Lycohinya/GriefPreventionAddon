@@ -1,9 +1,9 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.audit.AuditLogger
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
-import com.tinyyana.lycoLib.audit.AuditLog
-import com.tinyyana.lycoLib.config.Messages
 import me.ryanhamshire.GriefPrevention.Claim
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -14,7 +14,8 @@ import org.bukkit.entity.Player
 class ClaimNameCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
-    private val messages: Messages,
+    private val lang: LanguageManager,
+    private val auditLogger: AuditLogger? = null,
 ) : CommandExecutor, TabCompleter {
 
     companion object {
@@ -23,34 +24,33 @@ class ClaimNameCommand(
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         val player = sender as? Player ?: run {
-            sender.sendMessage(messages.get("system.player-only"))
+            sender.sendMessage(lang.get("system.player-only"))
             return true
         }
 
         if (!bridge.isAvailable()) {
-            player.sendMessage(messages.get("claim.gp-missing"))
+            player.sendMessage(lang.get(player, "claim.gp-missing"))
             return true
         }
 
         val playerClaims = bridge.getClaimsForPlayer(player.uniqueId)
 
         if (args.isEmpty() || args[0].equals("help", ignoreCase = true) || args[0].equals("?", ignoreCase = true)) {
-            player.sendMessage(messages.get("name.guide-header"))
+            player.sendMessage(lang.get(player, "name.guide-header"))
             val currentClaim = bridge.getTopClaim(player.location)
             if (currentClaim != null && (currentClaim.ownerID == player.uniqueId || player.hasPermission("griefpreventionaddon.admin") || player.isOp)) {
-                val currentAlias = currentClaim.id?.let { store.getAlias(it) } ?: "未設定"
-                player.sendMessage(messages.get("name.guide-current", "claimId" to (currentClaim.id?.toString() ?: "?"), "name" to currentAlias))
+                val currentAlias = currentClaim.id?.let { store.getAlias(it) } ?: (lang.raw(player, "gui.card-status-no-alias") ?: "None")
+                player.sendMessage(lang.get(player, "name.guide-current", "claimId" to (currentClaim.id?.toString() ?: "?"), "name" to currentAlias))
             } else {
-                player.sendMessage(messages.get("name.guide-current-none"))
+                player.sendMessage(lang.get(player, "name.guide-current-none"))
             }
-            player.sendMessage(messages.get("name.guide-line-set"))
-            player.sendMessage(messages.get("name.guide-line-clear"))
-            player.sendMessage(messages.get("name.guide-line-id"))
-            player.sendMessage(messages.get("name.guide-quick-prompt"))
+            player.sendMessage(lang.get(player, "name.guide-line-set"))
+            player.sendMessage(lang.get(player, "name.guide-line-clear"))
+            player.sendMessage(lang.get(player, "name.guide-line-id"))
+            player.sendMessage(lang.get(player, "name.guide-quick-prompt"))
             return true
         }
 
-        // 解析指定領地與目標別名
         val targetClaim: Claim
         val targetAlias: String?
 
@@ -62,24 +62,23 @@ class ClaimNameCommand(
             } else if (playerClaims.size == 1) {
                 targetClaim = playerClaims.first()
             } else if (playerClaims.isEmpty()) {
-                player.sendMessage(messages.get("teleport.no-claims"))
+                player.sendMessage(lang.get(player, "teleport.no-claims"))
                 return true
             } else {
-                player.sendMessage(messages.get("claim.not-in-claim"))
-                player.sendMessage(messages.get("name.guide-quick-prompt"))
+                player.sendMessage(lang.get(player, "claim.not-in-claim"))
+                player.sendMessage(lang.get(player, "name.guide-quick-prompt"))
                 return true
             }
             targetAlias = if (input.equals("clear", ignoreCase = true) || input.equals("remove", ignoreCase = true)) null else input
         } else {
-            // 2 個參數: /cname <領地ID> <別名|clear>
             val claimId = store.findClaimId(args[0], player.uniqueId, playerClaims)
             if (claimId == null) {
-                player.sendMessage(messages.get("teleport.invalid-target", "target" to args[0]))
+                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to args[0]))
                 return true
             }
             val claim = bridge.getClaim(claimId)
             if (claim == null) {
-                player.sendMessage(messages.get("teleport.claim-not-found", "claimId" to claimId.toString()))
+                player.sendMessage(lang.get(player, "teleport.claim-not-found", "claimId" to claimId.toString()))
                 return true
             }
             targetClaim = claim
@@ -88,39 +87,37 @@ class ClaimNameCommand(
         }
 
         val claimId = targetClaim.id ?: run {
-            player.sendMessage(messages.get("claim.save-failed"))
+            player.sendMessage(lang.get(player, "claim.save-failed"))
             return true
         }
 
-        // 權限檢查: 地主或管理員
         val isOwner = targetClaim.ownerID != null && targetClaim.ownerID == player.uniqueId
         if (!isOwner && !player.hasPermission("griefpreventionaddon.admin") && !player.isOp) {
-            player.sendMessage(messages.get("claim.not-owner"))
+            player.sendMessage(lang.get(player, "claim.not-owner"))
             return true
         }
 
         if (targetAlias == null) {
             store.setAlias(claimId, null)
-            player.sendMessage(messages.get("name.cleared", "claimId" to claimId.toString()))
-            AuditLog.log("GriefPreventionAddon", player.name, "claim-alias-clear", "claim=$claimId")
+            player.sendMessage(lang.get(player, "name.cleared", "claimId" to claimId.toString()))
+            auditLogger?.log(player.name, "claim-alias-clear", "claim=$claimId")
             return true
         }
 
-        // 別名檢驗
         val cleanAlias = targetAlias.trim()
         if (cleanAlias.length !in 1..20 || cleanAlias.removePrefix("#").toLongOrNull() != null || INVALID_CHARS.any { cleanAlias.contains(it) }) {
-            player.sendMessage(messages.get("name.invalid-name"))
+            player.sendMessage(lang.get(player, "name.invalid-name"))
             return true
         }
 
-        // 重複檢查 (同地主下不能有重複別名)
         for (otherClaim in playerClaims) {
             val otherId = otherClaim.id ?: continue
             if (otherId != claimId) {
                 val existing = store.getAlias(otherId)
                 if (existing != null && existing.equals(cleanAlias, ignoreCase = true)) {
                     player.sendMessage(
-                        messages.get(
+                        lang.get(
+                            player,
                             "name.duplicate-name",
                             "name" to cleanAlias,
                             "otherId" to otherId.toString(),
@@ -133,13 +130,14 @@ class ClaimNameCommand(
 
         store.setAlias(claimId, cleanAlias)
         player.sendMessage(
-            messages.get(
+            lang.get(
+                player,
                 "name.set-success",
                 "claimId" to claimId.toString(),
                 "name" to cleanAlias,
             ),
         )
-        AuditLog.log("GriefPreventionAddon", player.name, "claim-alias-set", "claim=$claimId alias=$cleanAlias")
+        auditLogger?.log(player.name, "claim-alias-set", "claim=$claimId alias=$cleanAlias")
         return true
     }
 

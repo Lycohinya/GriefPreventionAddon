@@ -15,80 +15,89 @@ website: https://tinyyana.com
 libraries:
   - org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.20-Beta1
 
-depend: [ LycoLib ]
 softdepend: [ GriefPrevention ]
 
 commands:
   ctnt:
-    description: 開關或查看目前花域的 TNT 爆炸方塊破壞
+    description: Toggle or query TNT explosion block damage for the current claim
     aliases: [ claimtnt ]
     usage: /ctnt [on|off|status]
   csettings:
-    description: 開啟目前花域的設定選單
+    description: Open the claim settings interactive GUI menu
     aliases: [ claimsettings, cmenu, claimgui ]
-    usage: /csettings
+    usage: /csettings [claimId|alias]
   pvpinclaim:
-    description: 開關自己花域內的 PVP(地主限定,選單顯示 /pvp)
+    description: Toggle PvP combat inside your claim
     aliases: [ pvp, cpvp, pvpc ]
     usage: /pvp
+  csethome:
+    description: Toggle whether untrusted visitors can use /sethome inside your claim
+    aliases: [ claimsethome, sethomeinclaim ]
+    usage: /csethome [on|off|status]
   claimmobs:
-    description: 開啟花域的生物生成開關選單(一般敵對/掠奪者/夜魅/史萊姆與岩漿立方怪/蝙蝠)
+    description: Open mob spawning toggle menu (Hostile, Raider, Phantom, Slime, Ambient)
     aliases: [ cmob ]
     usage: /cmob [hostile|raider|phantom|slime|ambient]
   claiminfo:
-    description: 查詢目前站的位置屬於誰的花域與設定
+    description: Query claim information, owner, and settings at your current location
     usage: /claiminfo
   claimtp:
-    description: 傳送至指定花域或自己擁有的花域中心安全位置
+    description: Teleport to your claim or a specified claim center/spawn point
     aliases: [ ctp, claimteleport ]
-    usage: /claimtp [別名|編號]
+    usage: /claimtp [alias|claimId]
   claimname:
-    description: 設定或清除目前花域的自訂別名(中英皆可)
+    description: Set or clear a custom alias for your claim
     aliases: [ cname, claimalias, calias ]
-    usage: /cname [別名|clear]
+    usage: /cname [alias|clear]
   claimspawn:
-    description: 把現在站的位置設成這塊花域的落腳點(/ctp 的目的地)
+    description: Set your current position as the custom spawn point for /ctp
     aliases: [ cspawn, claimpoint, csetspawn ]
     permission: griefpreventionaddon.spawn
     usage: /cspawn [set|clear]
   claimslist:
-    description: 列出自己名下的全部花域與別名，附點擊傳送捷徑
+    description: List all claims owned by you with click-to-teleport shortcuts
     aliases: [ claims, myclaims ]
     usage: /claimslist
   claimadmin:
-    description: 全伺服器花域管理面板與管理員工具
+    description: Global claims management panel and administrative tools
     aliases: [ cadmin, cmanage ]
     permission: griefpreventionaddon.admin
     usage: /cadmin [list|tp|delete|name|set|help]
 
 permissions:
   griefpreventionaddon.user:
-    description: 基礎花域設定與查詢權限(限自己的花域)
+    description: Basic claim settings and query permissions for owned claims
     default: true
   griefpreventionaddon.tnt:
-    description: 使用 /ctnt 切換自己花域的 TNT 開關
+    description: Toggle TNT setting in owned claims via /ctnt
     default: true
   griefpreventionaddon.tnt.others:
-    description: 切換非自己花域的 TNT 開關
+    description: Toggle TNT setting in claims owned by others
     default: op
   griefpreventionaddon.tnt.view:
-    description: 查看任何花域的 TNT 狀態
+    description: View TNT status in any claim
     default: true
+  griefpreventionaddon.sethome:
+    description: Toggle visitor /sethome setting in owned claims via /csethome
+    default: true
+  griefpreventionaddon.sethome.others:
+    description: Toggle visitor /sethome setting in claims owned by others, or bypass guest restrictions
+    default: op
   griefpreventionaddon.tp:
-    description: 傳送至自己擁有的花域
+    description: Teleport to owned claims via /ctp
     default: true
   griefpreventionaddon.tp.others:
-    description: 傳送至他人花域
+    description: Teleport to claims owned by others
     default: op
   griefpreventionaddon.tp.admin:
-    description: 傳送至管理員花域
+    description: Teleport to admin claims
     default: op
   griefpreventionaddon.spawn:
-    description: 設定自己花域的落腳點(/cspawn)
+    description: Set custom claim spawn point via /cspawn
     default: true
   griefpreventionaddon.settings.others:
-    description: 於 GUI 或指令中修改非自己花域的設定
+    description: Modify settings in claims owned by others
     default: op
   griefpreventionaddon.admin:
-    description: 管理員全權限(管理任何花域、查看診斷)
+    description: Full administrative permissions for GriefPreventionAddon
     default: op

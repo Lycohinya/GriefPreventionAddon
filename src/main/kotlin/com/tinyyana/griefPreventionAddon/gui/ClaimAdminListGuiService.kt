@@ -1,12 +1,12 @@
 package com.tinyyana.griefPreventionAddon.gui
 
+import com.tinyyana.griefPreventionAddon.gui.menu.MenuBuilder
+import com.tinyyana.griefPreventionAddon.gui.menu.MenuSize
+import com.tinyyana.griefPreventionAddon.gui.menu.NavigationSlots
+import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
-import com.tinyyana.lycoLib.config.Messages
-import com.tinyyana.lycoLib.menu.MenuBuilder
-import com.tinyyana.lycoLib.menu.MenuSize
-import com.tinyyana.lycoLib.menu.NavigationSlots
 import me.ryanhamshire.GriefPrevention.Claim
 import me.ryanhamshire.GriefPrevention.GriefPrevention
 import org.bukkit.Material
@@ -17,7 +17,7 @@ import kotlin.math.ceil
 class ClaimAdminListGuiService(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
-    private val messages: Messages,
+    private val lang: LanguageManager,
     private val builder: MenuBuilder = MenuBuilder(),
 ) {
     companion object {
@@ -30,7 +30,6 @@ class ClaimAdminListGuiService(
         val dataStore = GriefPrevention.instance.dataStore
         val allClaims = dataStore.claims?.toList() ?: emptyList<Claim>()
 
-        // 篩選領地
         val filtered = allClaims.filter { claim ->
             val matchPlayer = if (targetPlayer.isNullOrBlank()) {
                 true
@@ -58,25 +57,28 @@ class ClaimAdminListGuiService(
             pageClaims = pageClaims,
         )
 
-        val title = "全服花域管理面板 ($currentPage/$totalPages)"
+        val titleTemplate = lang.raw(player, "admin.list-title") ?: "Claims Management ({page}/{totalPages})"
+        val title = titleTemplate
+            .replace("{page}", currentPage.toString())
+            .replace("{totalPages}", totalPages.toString())
         val inv = builder.build(holder, MenuSize.LARGE, title)
         holder.setInventory(inv)
 
-        render(inv, holder, allClaims, filtered)
+        render(inv, holder, allClaims, filtered, player)
         player.openInventory(inv)
     }
 
-    fun render(inv: Inventory, holder: ClaimAdminListGuiHolder, allClaims: List<Claim>, filteredClaims: List<Claim>) {
+    fun render(inv: Inventory, holder: ClaimAdminListGuiHolder, allClaims: List<Claim>, filteredClaims: List<Claim>, player: Player? = null) {
         inv.clear()
         val nav = NavigationSlots.resolve(MenuSize.LARGE)
 
-        // 1. 渲染本頁領地卡片 (0 ~ 35)
+        // 1. Render claim cards (0 ~ 35)
         holder.pageClaims.forEachIndexed { index, claim ->
             val claimId = claim.id ?: return@forEachIndexed
             val isSub = claim.parent != null
             val isAdmin = claim.isAdminClaim()
             val alias = store.getAlias(claimId)
-            val ownerStr = claim.ownerName ?: "管理員 / 公共"
+            val ownerStr = claim.ownerName ?: lang.raw(player, "gui.owner-admin") ?: "Admin / Server"
             val width = claim.width
             val height = claim.height
             val area = claim.area
@@ -86,6 +88,7 @@ class ClaimAdminListGuiService(
 
             val tntAllowed = store.getBoolean(ClaimSettingsKeys.TNT, claimId)
             val pvpAllowed = store.getBoolean(ClaimSettingsKeys.PVP, claimId)
+            val sethomeAllowed = store.isSethomeAllowed(claimId)
 
             val mat = when {
                 isAdmin -> Material.BEACON
@@ -93,125 +96,137 @@ class ClaimAdminListGuiService(
                 else -> Material.GRASS_BLOCK
             }
 
-            val cardTitle = if (!alias.isNullOrBlank()) {
-                "<color:#ff8fc4><bold>花域 #$claimId</bold></color> <color:#ffd166>「$alias」</color>"
+            val cardTitleTemplate = if (!alias.isNullOrBlank()) {
+                lang.raw(player, "admin.card-title-named") ?: "<color:#ff8fc4><bold>Claim #{claimId}</bold></color> <color:#ffd166>\"{alias}\"</color>"
             } else {
-                "<color:#ff8fc4><bold>花域 #$claimId</bold></color>"
+                lang.raw(player, "admin.card-title") ?: "<color:#ff8fc4><bold>Claim #{claimId}</bold></color>"
             }
+            val cardTitle = cardTitleTemplate.replace("{claimId}", claimId.toString()).replace("{alias}", alias ?: "")
 
             val typeBadge = when {
-                isAdmin -> "<color:#fca5a5>管理員領地</color>"
-                isSub -> "<color:#6fd8e8>子花域</color>"
-                else -> "<color:#a7f3d0>玩家花域</color>"
+                isAdmin -> lang.raw(player, "admin.card-type-admin") ?: "<color:#fca5a5>Admin Claim</color>"
+                isSub -> lang.raw(player, "admin.card-type-sub") ?: "<color:#6fd8e8>Subdivision</color>"
+                else -> lang.raw(player, "admin.card-type-player") ?: "<color:#a7f3d0>Player Claim</color>"
             }
 
-            val lore = listOf(
-                "<dark_gray>類型</dark_gray> $typeBadge",
-                "<dark_gray>地主</dark_gray> <color:#f5f5f5>$ownerStr</color>",
-                "<dark_gray>尺寸</dark_gray> <color:#f5f5f5>$width × $height</color> <color:#a8a8a8>($area 格)</color>",
-                "<dark_gray>位置</dark_gray> <color:#a8a8a8>$worldName ($centerX, $centerZ)</color>",
-                "<dark_gray>狀態</dark_gray> TNT: ${if (tntAllowed) "<green>允許</green>" else "<red>阻止</red>"} | PVP: ${if (pvpAllowed) "<green>允許</green>" else "<red>保護</red>"}",
-                "",
-                "<yellow><bold>左鍵</bold></yellow><white> 開啟花域管理設定</white>",
-                "<yellow><bold>Shift+左鍵</bold></yellow><white> 瞬間傳送至此花域</white>",
-            )
+            val tntText = if (tntAllowed) "<green>ON</green>" else "<red>OFF</red>"
+            val pvpText = if (pvpAllowed) "<green>ON</green>" else "<red>OFF</red>"
+            val sethomeText = if (sethomeAllowed) "<green>ON</green>" else "<red>OFF</red>"
 
-            builder.placeIcon(
+            val loreTemplate = lang.rawList(player, "admin.card-lore")
+            val lore = loreTemplate.map { line ->
+                line.replace("{type}", typeBadge)
+                    .replace("{owner}", ownerStr)
+                    .replace("{width}", width.toString())
+                    .replace("{height}", height.toString())
+                    .replace("{area}", area.toString())
+                    .replace("{world}", worldName)
+                    .replace("{x}", centerX.toString())
+                    .replace("{z}", centerZ.toString())
+                    .replace("{tnt}", tntText)
+                    .replace("{pvp}", pvpText)
+                    .replace("{sethome}", sethomeText)
+            }
+
+            builder.place(
                 inventory = inv,
                 slot = index,
-                iconId = if (isAdmin) "admin_claim" else "claim",
+                material = mat,
                 name = cardTitle,
                 lore = lore,
-                fallback = mat,
                 glint = isAdmin,
             )
         }
 
-        // 2. 統計卡片 (Slot 36)
+        // 2. Statistics Card (Slot 36)
         val totalArea = allClaims.sumOf { it.area.toLong() }
         val adminCount = allClaims.count { it.isAdminClaim() }
         val playerCount = allClaims.size - adminCount
-        val statsLore = listOf(
-            "<gray>伺服器花域全局統計資料</gray>",
-            "",
-            "<dark_gray>花域總數</dark_gray> <color:#ffd166>${allClaims.size}</color> <color:#a8a8a8>個</color>",
-            "<dark_gray>玩家花域</dark_gray> <color:#a7f3d0>$playerCount</color> <color:#a8a8a8>個</color>",
-            "<dark_gray>管理員花域</dark_gray> <color:#fca5a5>$adminCount</color> <color:#a8a8a8>個</color>",
-            "<dark_gray>受保護總面積</dark_gray> <color:#6fd8e8>$totalArea</color> <color:#a8a8a8>格</color>",
-        )
-        builder.placeIcon(
+
+        val statsName = lang.raw(player, "admin.stats-name") ?: "<color:#6fd8e8><bold>Global Claims Statistics</bold></color>"
+        val statsLoreTemplate = lang.rawList(player, "admin.stats-lore")
+        val statsLore = statsLoreTemplate.map { line ->
+            line.replace("{total}", allClaims.size.toString())
+                .replace("{player}", playerCount.toString())
+                .replace("{admin}", adminCount.toString())
+                .replace("{area}", totalArea.toString())
+        }
+        builder.place(
             inventory = inv,
             slot = STATS_SLOT,
-            iconId = "stats",
-            name = "<color:#6fd8e8><bold>花域總體統計</bold></color>",
+            material = Material.KNOWLEDGE_BOOK,
+            name = statsName,
             lore = statsLore,
-            fallback = Material.KNOWLEDGE_BOOK,
         )
 
-        // 3. 篩選按鈕 (Slot 38)
+        // 3. Filter Button (Slot 38)
         val filterLabel = when (holder.filterType) {
-            "ADMIN" -> "僅管理員花域"
-            "PLAYER" -> "僅玩家花域"
-            else -> "顯示全部花域"
+            "ADMIN" -> lang.raw(player, "admin.filter-admin") ?: "Admin Claims Only"
+            "PLAYER" -> lang.raw(player, "admin.filter-player") ?: "Player Claims Only"
+            else -> lang.raw(player, "admin.filter-all") ?: "Show All Claims"
         }
-        val filterLore = listOf(
-            "<gray>點擊切換清單篩選條件</gray>",
-            "",
-            "<dark_gray>目前篩選</dark_gray> <color:#ffd166>$filterLabel</color>",
-            "<dark_gray>匹配結果</dark_gray> <color:#a8a8a8>${filteredClaims.size} 個花域</color>",
-            "",
-            "<yellow><bold>左鍵</bold></yellow><white> 切換篩選 (全部 → 玩家 → 管理員)</white>",
-        )
-        builder.placeIcon(
+        val filterName = lang.raw(player, "admin.filter-name") ?: "<color:#ffd166><bold>Filter Claims List</bold></color>"
+        val filterLoreTemplate = lang.rawList(player, "admin.filter-lore")
+        val filterLore = filterLoreTemplate.map { line ->
+            line.replace("{current}", filterLabel)
+                .replace("{count}", filteredClaims.size.toString())
+        }
+        builder.place(
             inventory = inv,
             slot = FILTER_SLOT,
-            iconId = "filter",
-            name = "<color:#ffd166><bold>篩選花域清單</bold></color>",
+            material = Material.HOPPER,
+            name = filterName,
             lore = filterLore,
-            fallback = Material.HOPPER,
         )
 
-        // 4. 分頁控制
+        // 4. Pagination Controls
         if (holder.page > 1) {
-            builder.placeIcon(
+            val prevName = lang.raw(player, "admin.prev-page-name") ?: "<color:#6fd8e8><bold>Previous Page</bold></color>"
+            val prevLore = (lang.raw(player, "admin.prev-page-lore") ?: "<gray>Go to page {page}</gray>").replace("{page}", (holder.page - 1).toString())
+            builder.place(
                 inventory = inv,
                 slot = nav.previousPage,
-                iconId = "prev_page",
-                name = "<color:#6fd8e8><bold>上一頁</bold></color>",
-                lore = listOf("<gray>前往第 ${holder.page - 1} 頁</gray>"),
-                fallback = Material.ARROW,
+                material = Material.ARROW,
+                name = prevName,
+                lore = listOf(prevLore),
             )
         }
 
-        // 頁碼指示器 (Slot 49 / pageIndicator)
-        builder.placeIcon(
+        // Page Indicator
+        val pageIndicatorName = (lang.raw(player, "admin.page-indicator-name") ?: "<color:#ffd166><bold>Page {page} / {totalPages}</bold></color>")
+            .replace("{page}", holder.page.toString())
+            .replace("{totalPages}", holder.totalPages.toString())
+        val pageIndicatorLore = (lang.raw(player, "admin.page-indicator-lore") ?: "<gray>{count} total claims</gray>")
+            .replace("{count}", filteredClaims.size.toString())
+        builder.place(
             inventory = inv,
             slot = nav.pageIndicator,
-            iconId = "page_info",
-            name = "<color:#ffd166><bold>第 ${holder.page} / ${holder.totalPages} 頁</bold></color>",
-            lore = listOf("<gray>共 ${filteredClaims.size} 筆花域資料</gray>"),
-            fallback = Material.PAPER,
+            material = Material.PAPER,
+            name = pageIndicatorName,
+            lore = listOf(pageIndicatorLore),
         )
 
         if (holder.page < holder.totalPages) {
-            builder.placeIcon(
+            val nextName = lang.raw(player, "admin.next-page-name") ?: "<color:#6fd8e8><bold>Next Page</bold></color>"
+            val nextLore = (lang.raw(player, "admin.next-page-lore") ?: "<gray>Go to page {page}</gray>").replace("{page}", (holder.page + 1).toString())
+            builder.place(
                 inventory = inv,
                 slot = nav.nextPage,
-                iconId = "next_page",
-                name = "<color:#6fd8e8><bold>下一頁</bold></color>",
-                lore = listOf("<gray>前往第 ${holder.page + 1} 頁</gray>"),
-                fallback = Material.ARROW,
+                material = Material.ARROW,
+                name = nextName,
+                lore = listOf(nextLore),
             )
         }
 
-        // 關閉按鈕
-        builder.placeIcon(
+        // Close Button
+        val closeName = lang.raw(player, "admin.close-name") ?: "<color:#fca5a5><bold>Close Panel</bold></color>"
+        val closeLore = lang.raw(player, "admin.close-lore") ?: "<gray>Click to close</gray>"
+        builder.place(
             inventory = inv,
             slot = nav.rightClose,
-            iconId = "close",
-            name = "<color:#fca5a5><bold>關閉面板</bold></color>",
-            lore = listOf("<gray>點擊關閉此管理視窗</gray>"),
-            fallback = Material.BARRIER,
+            material = Material.BARRIER,
+            name = closeName,
+            lore = listOf(closeLore),
         )
     }
 }

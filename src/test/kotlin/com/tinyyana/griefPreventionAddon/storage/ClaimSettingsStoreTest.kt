@@ -36,8 +36,10 @@ class ClaimSettingsStoreTest {
     fun `defaults to false for all settings`() {
         assertFalse(store.isTntAllowed(100L))
         assertFalse(store.isPvpAllowed(100L))
+        assertFalse(store.isSethomeAllowed(100L))
         assertFalse(store.isMobSpawnBlocked(ClaimSettingsKeys.NO_HOSTILE_SPAWN, 100L))
         assertFalse(store.anyEnabled(ClaimSettingsKeys.TNT))
+        assertFalse(store.anyEnabled(ClaimSettingsKeys.ALLOW_SETHOME))
     }
 
     @Test
@@ -51,12 +53,17 @@ class ClaimSettingsStoreTest {
         assertFalse(turnedOff)
         assertFalse(store.isTntAllowed(100L))
         assertFalse(store.anyEnabled(ClaimSettingsKeys.TNT))
+
+        val sethomeState = store.toggle(ClaimSettingsKeys.ALLOW_SETHOME, 100L)
+        assertTrue(sethomeState)
+        assertTrue(store.isSethomeAllowed(100L))
     }
 
     @Test
     fun `persists settings across reconnect`() {
         store.setBoolean(ClaimSettingsKeys.TNT, 100L, true)
         store.setBoolean(ClaimSettingsKeys.PVP, 200L, true)
+        store.setBoolean(ClaimSettingsKeys.ALLOW_SETHOME, 300L, true)
         store.setBoolean(ClaimSettingsKeys.NO_HOSTILE_SPAWN, 100L, true)
 
         db.close()
