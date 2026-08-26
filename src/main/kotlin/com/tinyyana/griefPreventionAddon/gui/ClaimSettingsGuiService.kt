@@ -122,12 +122,13 @@ class ClaimSettingsGuiService(
             headerLore.add(lang.raw(player, "gui.card-status-admin-hint") ?: "<color:#fca5a5>※ Admin Mode: Viewing another player's claim</color>")
         }
 
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = HEADER_SLOT,
-            material = Material.GOLDEN_SHOVEL,
+            iconId = "claim",
             name = titleText,
             lore = headerLore,
+            fallback = Material.GOLDEN_SHOVEL,
         )
 
         // 2. Context Band: Teleport Action (Slot 1)
@@ -159,12 +160,13 @@ class ClaimSettingsGuiService(
             "",
             teleportAction,
         )
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = TELEPORT_SLOT,
-            material = Material.ENDER_PEARL,
+            iconId = "travel",
             name = teleportTitle,
             lore = teleportLore,
+            fallback = Material.ENDER_PEARL,
             glint = true,
         )
 
@@ -189,12 +191,13 @@ class ClaimSettingsGuiService(
             "",
             renameAction,
         )
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = RENAME_SLOT,
-            material = Material.NAME_TAG,
+            iconId = "rename",
             name = renameTitle,
             lore = renameLore,
+            fallback = Material.NAME_TAG,
             glint = aliasDisplay != null,
         )
 
@@ -225,12 +228,13 @@ class ClaimSettingsGuiService(
         if (spawnRawSet) {
             spawnLore.add(lang.raw(player, "gui.btn-spawn-action-clear") ?: "<yellow><bold>Right-Click</bold></yellow><white> Clear spawn</white>")
         }
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = SPAWN_SLOT,
-            material = Material.LODESTONE,
+            iconId = "warp_point",
             name = spawnTitle,
             lore = spawnLore,
+            fallback = Material.LODESTONE,
             glint = spawn != null,
         )
 
@@ -251,12 +255,13 @@ class ClaimSettingsGuiService(
                 "",
                 adminAction,
             )
-            builder.place(
+            builder.placeIcon(
                 inventory = inv,
                 slot = ADMIN_PANEL_SLOT,
-                material = Material.BEACON,
+                iconId = "admin",
                 name = adminTitle,
                 lore = adminLore,
+                fallback = Material.BEACON,
             )
         }
 
@@ -278,12 +283,13 @@ class ClaimSettingsGuiService(
                 "",
                 actionLine,
             )
-            builder.place(
+            builder.placeIcon(
                 inventory = inv,
                 slot = slot,
-                material = def.fallbackMaterial,
+                iconId = def.iconId,
                 name = name,
                 lore = lore,
+                fallback = def.fallbackMaterial,
                 glint = enabled,
             )
         }
@@ -291,25 +297,27 @@ class ClaimSettingsGuiService(
         // 6. Footer Navigation
         val helpName = lang.raw(player, "gui.footer-help-name") ?: "<color:#ffb7d5><bold>Help</bold></color>"
         val helpLore = lang.rawList(player, "gui.footer-help-lore")
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = nav.help,
-            material = Material.KNOWLEDGE_BOOK,
+            iconId = "help",
             name = helpName,
             lore = helpLore,
+            fallback = Material.KNOWLEDGE_BOOK,
         )
 
         val closeName = lang.raw(player, "gui.footer-close-name") ?: "<color:#a8a8a8><bold>Close Menu</bold></color>"
         val closeAction = lang.raw(player, "gui.footer-close-action") ?: "<yellow><bold>Left-Click</bold></yellow><white> Close</white>"
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = nav.rightClose,
-            material = Material.BARRIER,
+            iconId = "close",
             name = closeName,
             lore = listOf(closeAction),
+            fallback = Material.BARRIER,
         )
 
         // 7. Fill background panes
-        builder.fillEmpty(inv, Material.GRAY_STAINED_GLASS_PANE)
+        builder.fillEmpty(inv, Material.GRAY_STAINED_GLASS_PANE, "filler")
     }
 }

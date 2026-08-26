@@ -191,7 +191,7 @@ class LanguageManager(
             text = text.replace("{$k}", v)
         }
         val prefix = raw(player, "system.prefix") ?: ""
-        return mm.deserialize(prefix + text)
+        return mm.deserialize(prefix + text).decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC, net.kyori.adventure.text.format.TextDecoration.State.FALSE)
     }
 
     fun get(key: String, vararg placeholders: Pair<String, String>): Component = get(null, key, *placeholders)
@@ -201,12 +201,12 @@ class LanguageManager(
         for ((k, v) in placeholders) {
             text = text.replace("{$k}", v)
         }
-        return mm.deserialize(text)
+        return mm.deserialize(text).decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC, net.kyori.adventure.text.format.TextDecoration.State.FALSE)
     }
 
     fun render(text: String, prefix: Boolean = false, player: Player? = null): Component {
         val p = if (prefix) (raw(player, "system.prefix") ?: "") else ""
-        return mm.deserialize(p + text)
+        return mm.deserialize(p + text).decorationIfAbsent(net.kyori.adventure.text.format.TextDecoration.ITALIC, net.kyori.adventure.text.format.TextDecoration.State.FALSE)
     }
 
     fun missing(key: String): Component = Component.text("[missing message: $key]")

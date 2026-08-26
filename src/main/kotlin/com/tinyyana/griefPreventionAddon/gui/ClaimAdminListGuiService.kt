@@ -128,12 +128,14 @@ class ClaimAdminListGuiService(
                     .replace("{sethome}", sethomeText)
             }
 
-            builder.place(
+            val iconId = if (isAdmin) "admin" else "claim"
+            builder.placeIcon(
                 inventory = inv,
                 slot = index,
-                material = mat,
+                iconId = iconId,
                 name = cardTitle,
                 lore = lore,
+                fallback = mat,
                 glint = isAdmin,
             )
         }
@@ -151,12 +153,13 @@ class ClaimAdminListGuiService(
                 .replace("{admin}", adminCount.toString())
                 .replace("{area}", totalArea.toString())
         }
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = STATS_SLOT,
-            material = Material.KNOWLEDGE_BOOK,
+            iconId = "help",
             name = statsName,
             lore = statsLore,
+            fallback = Material.KNOWLEDGE_BOOK,
         )
 
         // 3. Filter Button (Slot 38)
@@ -171,24 +174,26 @@ class ClaimAdminListGuiService(
             line.replace("{current}", filterLabel)
                 .replace("{count}", filteredClaims.size.toString())
         }
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = FILTER_SLOT,
-            material = Material.HOPPER,
+            iconId = "filter",
             name = filterName,
             lore = filterLore,
+            fallback = Material.HOPPER,
         )
 
         // 4. Pagination Controls
         if (holder.page > 1) {
             val prevName = lang.raw(player, "admin.prev-page-name") ?: "<color:#6fd8e8><bold>Previous Page</bold></color>"
             val prevLore = (lang.raw(player, "admin.prev-page-lore") ?: "<gray>Go to page {page}</gray>").replace("{page}", (holder.page - 1).toString())
-            builder.place(
+            builder.placeIcon(
                 inventory = inv,
                 slot = nav.previousPage,
-                material = Material.ARROW,
+                iconId = "previous_page",
                 name = prevName,
                 lore = listOf(prevLore),
+                fallback = Material.ARROW,
             )
         }
 
@@ -198,35 +203,41 @@ class ClaimAdminListGuiService(
             .replace("{totalPages}", holder.totalPages.toString())
         val pageIndicatorLore = (lang.raw(player, "admin.page-indicator-lore") ?: "<gray>{count} total claims</gray>")
             .replace("{count}", filteredClaims.size.toString())
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = nav.pageIndicator,
-            material = Material.PAPER,
+            iconId = "page_indicator",
             name = pageIndicatorName,
             lore = listOf(pageIndicatorLore),
+            fallback = Material.PAPER,
         )
 
         if (holder.page < holder.totalPages) {
             val nextName = lang.raw(player, "admin.next-page-name") ?: "<color:#6fd8e8><bold>Next Page</bold></color>"
             val nextLore = (lang.raw(player, "admin.next-page-lore") ?: "<gray>Go to page {page}</gray>").replace("{page}", (holder.page + 1).toString())
-            builder.place(
+            builder.placeIcon(
                 inventory = inv,
                 slot = nav.nextPage,
-                material = Material.ARROW,
+                iconId = "next_page",
                 name = nextName,
                 lore = listOf(nextLore),
+                fallback = Material.ARROW,
             )
         }
 
         // Close Button
         val closeName = lang.raw(player, "admin.close-name") ?: "<color:#fca5a5><bold>Close Panel</bold></color>"
         val closeLore = lang.raw(player, "admin.close-lore") ?: "<gray>Click to close</gray>"
-        builder.place(
+        builder.placeIcon(
             inventory = inv,
             slot = nav.rightClose,
-            material = Material.BARRIER,
+            iconId = "close",
             name = closeName,
             lore = listOf(closeLore),
+            fallback = Material.BARRIER,
         )
+
+        // 5. Fill empty background
+        builder.fillEmpty(inv, Material.GRAY_STAINED_GLASS_PANE, "filler")
     }
 }
