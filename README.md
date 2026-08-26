@@ -112,7 +112,7 @@ cd Lycohinya/LycohinyaPlugins/GriefPreventionAddon
 ./gradlew build
 ```
 
-The output JAR will be generated in `build/libs/GriefPreventionAddon-0.3.0.jar`.
+The output JAR will be generated in `build/libs/GriefPreventionAddon-0.3.1.jar`.
 
 ---
 
