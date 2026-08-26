@@ -16,13 +16,13 @@ Supports **Paper**, **Lecithin 26.2**, and Paper API compatible server cores wit
 | Feature | Description (English) | 說明 (繁體中文) | Command |
 |---|---|---|---|
 | **TNT Explosion Control** | Claim owners can allow or block explosion block damage inside their claim. Precise edge-filtering protects boundary blocks. | 地主自主決定領地內是否允許 TNT 爆炸破壞方塊，邊界過濾演算法精準保護領地方塊。 | `/ctnt [on\|off\|status]` |
-| **Guest `/sethome` Control** | Claim owners decide whether untrusted visitors can use `/sethome` in their claim, preventing unauthorized fast travel. | 地主可自由設定是否允許未信任的訪客在自己花域內使用 `/sethome` 設家。 | `/csethome [on\|off\|status]` |
+| **Guest `/sethome` Control** | Claim owners decide whether untrusted visitors can use `/sethome` in their claim, preventing unauthorized fast travel. | 地主可自由設定是否允許未信任的訪客在自己領地內使用 `/sethome` 設家。 | `/csethome [on\|off\|status]` |
 | **PvP Combat Toggle** | Enable or disable player vs player combat inside the claim with real-time feedback. | 地主可自主開啟或關閉領地內的 PVP 對戰狀態，保護和平玩家。 | `/pvp` (`/pvpinclaim`) |
 | **Natural Mob Filters** | Selectively toggle natural spawning for 5 mob categories (Hostile, Raider, Phantom, Slime, Ambient) without affecting spawners or breeding. | 分類開關自然生怪（一般敵對 / 掠奪者 / 夜魅 / 史萊姆 / 蝙蝠），不影響生怪磚與繁殖。 | `/cmob [category]` |
-| **Fast Claim Teleport** | Instantly teleport to claim centers or custom spawn locations with safe height and region resolution. | 安全瞬間傳送至花域中心或自訂落腳點。 | `/claimtp [id\|alias]` (`/ctp`) |
+| **Fast Claim Teleport** | Instantly teleport to claim centers or custom spawn locations with safe height and region resolution. | 安全瞬間傳送至領地中心或自訂落腳點。 | `/claimtp [id\|alias]` (`/ctp`) |
 | **Custom Spawn Point** | Claim owners can define their exact standing location as the landing target for `/ctp`. | 地主可將當前站立點設為 `/ctp` 傳送落腳點，隨時自由清除或恢復中心。 | `/cspawn [set\|clear]` |
 | **Claim Aliases & Naming** | Assign memorable names (e.g. `home`, `farm`, `shop`) to claims for convenient teleportation and recognition. | 為領地設定自訂別名（如「主家」、「農場」），支援中英文並可直接用於傳送。 | `/cname [alias\|clear]` |
-| **Interactive GUI Menu** | Chest GUI for intuitive claim settings, renaming, spawn points, and toggle adjustments. | 視覺化箱子選單，直觀管理花域狀態、改名、落腳點、TNT、PvP 與各類生物生成。 | `/csettings [id\|alias]` |
+| **Interactive GUI Menu** | Chest GUI for intuitive claim settings, renaming, spawn points, and toggle adjustments. | 視覺化箱子選單，直觀管理領地狀態、改名、落腳點、TNT、PvP 與各類生物生成。 | `/csettings [id\|alias]` |
 | **Global Admin Panel** | Multi-page paginated administrative GUI to inspect, filter, search, teleport, edit, or purge all server claims. | 全伺服器管理員面板，具備分頁、篩選、即時搜尋、強制傳送、改名與刪除功能。 | `/cadmin [list\|tp\|delete...]` |
 | **Multi-Language (i18n)** | Full localization support with automatic Minecraft client locale matching (`zh_TW`, `en_US`, etc.). | 完整的國際化多語言架構，依照玩家客戶端語言自動切換繁中與英文。 | Configurable |
 
@@ -44,27 +44,27 @@ Supports **Paper**, **Lecithin 26.2**, and Paper API compatible server cores wit
 
 | Command / 指令 | Aliases / 別名 | Permission / 權限 | Description / 說明 |
 |---|---|---|---|
-| `/csettings [id\|alias]` | `/claimsettings`, `/cmenu`, `/claimgui` | `griefpreventionaddon.user` | Open claim settings GUI / 開啟花域設定選單 |
+| `/csettings [id\|alias]` | `/claimsettings`, `/cmenu`, `/claimgui` | `griefpreventionaddon.user` | Open claim settings GUI / 開啟領地設定選單 |
 | `/ctnt [on\|off\|status]` | `/claimtnt` | `griefpreventionaddon.tnt` | Toggle or check TNT explosion damage / 切換 TNT 爆炸破壞 |
 | `/csethome [on\|off\|status]` | `/claimsethome`, `/sethomeinclaim` | `griefpreventionaddon.sethome` | Toggle visitor `/sethome` permission / 切換訪客設家權限 |
 | `/pvp` | `/pvpinclaim`, `/cpvp` | `griefpreventionaddon.user` | Toggle claim PvP combat / 切換領地 PVP 狀態 |
 | `/cmob [category]` | `/claimmobs` | `griefpreventionaddon.user` | Toggle mob natural spawning categories / 切換生物自然生成 |
 | `/claiminfo` | 無 | `griefpreventionaddon.user` | View info & actions for current claim / 查詢當前領地資訊 |
-| `/claimtp [id\|alias]` | `/ctp`, `/claimteleport` | `griefpreventionaddon.tp` | Teleport to claim center or custom spawn / 傳送至花域 |
+| `/claimtp [id\|alias]` | `/ctp`, `/claimteleport` | `griefpreventionaddon.tp` | Teleport to claim center or custom spawn / 傳送至領地 |
 | `/claimname [alias\|clear]` | `/cname`, `/claimalias` | `griefpreventionaddon.user` | Set or clear custom claim alias / 設定或清除領地別名 |
-| `/claimspawn [set\|clear]` | `/cspawn`, `/csetspawn` | `griefpreventionaddon.spawn` | Set current spot as claim spawn point / 設定花域落腳點 |
-| `/claimslist` | `/claims`, `/myclaims` | `griefpreventionaddon.user` | List all owned claims with teleport buttons / 列出名下花域 |
+| `/claimspawn [set\|clear]` | `/cspawn`, `/csetspawn` | `griefpreventionaddon.spawn` | Set current spot as claim spawn point / 設定領地落腳點 |
+| `/claimslist` | `/claims`, `/myclaims` | `griefpreventionaddon.user` | List all owned claims with teleport buttons / 列出名下領地 |
 
 ### Admin Commands & Permissions / 管理員指令與權限
 
 | Command / 指令 | Permission / 權限 | Description / 說明 |
 |---|---|---|
-| `/cadmin` | `griefpreventionaddon.admin` | Open global claims admin GUI / 開啟全服花域管理面板 |
-| `/cadmin list [player]` | `griefpreventionaddon.admin` | List all claims or claims of a specific player / 檢視特定玩家或全部花域 |
-| `/cadmin tp <id\|alias>` | `griefpreventionaddon.admin` | Force teleport to any claim / 強制傳送至任意花域 |
-| `/cadmin delete <id>` | `griefpreventionaddon.admin` | Force delete claim and purge database records / 強制刪除花域與設定 |
-| `/cadmin name <id> <alias\|clear>` | `griefpreventionaddon.admin` | Modify alias of any claim / 設定或清除任意花域別名 |
-| `/cadmin set <id> <key> <true\|false>` | `griefpreventionaddon.admin` | Force toggle a claim setting key / 強制設定花域開關數值 |
+| `/cadmin` | `griefpreventionaddon.admin` | Open global claims admin GUI / 開啟全服領地管理面板 |
+| `/cadmin list [player]` | `griefpreventionaddon.admin` | List all claims or claims of a specific player / 檢視特定玩家或全部領地 |
+| `/cadmin tp <id\|alias>` | `griefpreventionaddon.admin` | Force teleport to any claim / 強制傳送至任意領地 |
+| `/cadmin delete <id>` | `griefpreventionaddon.admin` | Force delete claim and purge database records / 強制刪除領地與設定 |
+| `/cadmin name <id> <alias\|clear>` | `griefpreventionaddon.admin` | Modify alias of any claim / 設定或清除任意領地別名 |
+| `/cadmin set <id> <key> <true\|false>` | `griefpreventionaddon.admin` | Force toggle a claim setting key / 強制設定領地開關數值 |
 
 ---
 
