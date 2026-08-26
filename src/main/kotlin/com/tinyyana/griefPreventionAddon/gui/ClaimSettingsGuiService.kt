@@ -23,8 +23,8 @@ class ClaimSettingsGuiService(
         const val HEADER_SLOT = 0
         const val TELEPORT_SLOT = 1
         const val RENAME_SLOT = 2
-        const val ADMIN_PANEL_SLOT = 3
-        const val SPAWN_SLOT = 4
+        const val SPAWN_SLOT = 3
+        const val ADMIN_PANEL_SLOT = 4
 
         const val TNT_SLOT = 9
         const val PVP_SLOT = 10
