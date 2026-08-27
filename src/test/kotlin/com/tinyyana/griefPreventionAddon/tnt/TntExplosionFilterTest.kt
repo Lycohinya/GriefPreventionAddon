@@ -109,4 +109,31 @@ class TntExplosionFilterTest {
         assertEquals(2, protectedCount)
         assertEquals(0, blocks.size)
     }
+
+    @Test
+    fun `non-TNT explosion removes all claim blocks but keeps wilderness blocks`() {
+        val blocks = mutableListOf(
+            MockBlock("claim_1", Location(null, 5.0, 64.0, 10.0)),
+            MockBlock("claim_2", Location(null, 8.0, 64.0, 10.0)),
+            MockBlock("wilderness_1", Location(null, 30.0, 64.0, 10.0)),
+            MockBlock("wilderness_2", Location(null, 35.0, 64.0, 10.0)),
+        )
+
+        // x < 20 為領地 (回傳 true), x >= 20 為荒野 (回傳 false)
+        val isInAnyClaim = { loc: Location -> loc.x < 20 }
+
+        val protectedCount = TntExplosionListener.filterNonTntBlocks(
+            blocks,
+            locationExtractor = { it.location },
+            isInAnyClaim = isInAnyClaim,
+        )
+
+        assertEquals(2, protectedCount)
+        assertEquals(listOf("wilderness_1", "wilderness_2"), blocks.map { it.name })
+    }
+
+    @Test
+    fun `isTntSource returns false for null entity`() {
+        kotlin.test.assertFalse(TntExplosionListener.isTntSource(null))
+    }
 }

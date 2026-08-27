@@ -115,6 +115,10 @@ class ClaimSettingsGuiListener(
 
         auditLogger?.log(player.name, "claim-setting.${def.key}", "claim=${holder.claimId} state=$newState")
 
+        if (def.key == ClaimSettingsKeys.TNT) {
+            bridge.syncClaimExplosives(holder.claimId, newState)
+        }
+
         // Broadcast or send notifications when PvP or other impactful settings change
         if (def.key == ClaimSettingsKeys.PVP) {
             val msgKey = if (newState) "pvp.allowed" else "pvp.blocked"

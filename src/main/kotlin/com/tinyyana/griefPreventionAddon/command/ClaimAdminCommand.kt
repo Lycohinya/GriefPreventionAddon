@@ -7,6 +7,7 @@ import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiService
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
+import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
 import me.ryanhamshire.GriefPrevention.GriefPrevention
@@ -143,6 +144,9 @@ class ClaimAdminCommand(
                 return true
             }
             store.setBoolean(key, id, value)
+            if (key == ClaimSettingsKeys.TNT) {
+                bridge.syncClaimExplosives(id, value)
+            }
             sender.sendMessage(lang.get(player, "admin.set-success", "claimId" to id.toString(), "key" to key, "value" to value.toString()))
             auditLogger?.log(sender.name, "admin-set-setting", "claim=$id key=$key value=$value")
             return true

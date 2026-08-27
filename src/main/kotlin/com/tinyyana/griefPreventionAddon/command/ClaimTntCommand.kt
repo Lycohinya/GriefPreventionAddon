@@ -66,6 +66,8 @@ class ClaimTntCommand(
             else -> store.toggle(ClaimSettingsKeys.TNT, ownership.claimId)
         }
 
+        bridge.syncClaimExplosives(ownership.claimId, newState)
+
         val msgKey = if (newState) "tnt.allowed" else "tnt.blocked"
         player.sendMessage(lang.get(player, msgKey, "claimId" to ownership.claimId.toString()))
 

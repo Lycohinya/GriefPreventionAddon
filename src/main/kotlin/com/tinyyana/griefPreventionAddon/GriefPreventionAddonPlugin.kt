@@ -85,13 +85,16 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
         )
 
         // Intercept GriefPrevention's hardcoded CommandsRequiringAccessTrust if /sethome is in it
-        takeOverGriefPreventionSethome()
+        griefPreventionBridge.takeOverSethomeCommands()
+
+        // Sync all claim TNT settings to GriefPrevention in-memory objects
+        griefPreventionBridge.syncAllClaimExplosives(claimSettingsStore)
 
         // Register Listeners
         val pm = server.pluginManager
         pm.registerEvents(TntExplosionListener(griefPreventionBridge, claimSettingsStore), this)
         pm.registerEvents(ClaimToggleListener(griefPreventionBridge, claimSettingsStore), this)
-        pm.registerEvents(ClaimLifecycleListener(claimSettingsStore), this)
+        pm.registerEvents(ClaimLifecycleListener(claimSettingsStore, griefPreventionBridge), this)
         pm.registerEvents(SethomeRestrictionListener(griefPreventionBridge, claimSettingsStore, lang), this)
         pm.registerEvents(
             ClaimSettingsGuiListener(
@@ -183,27 +186,6 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
         }
 
         logger.info("[GriefPreventionAddon] Plugin successfully enabled (version: ${description.version}).")
-    }
-
-    private fun takeOverGriefPreventionSethome() {
-        runCatching {
-            if (griefPreventionBridge.isAvailable()) {
-                val gpInstance = GriefPrevention.instance
-                val list = gpInstance.config_claims_commandsRequiringAccessTrust
-                if (list != null) {
-                    val removed = list.removeIf { cmd ->
-                        cmd.equals("/sethome", ignoreCase = true) ||
-                            cmd.equals("/esethome", ignoreCase = true) ||
-                            cmd.equals("sethome", ignoreCase = true)
-                    }
-                    if (removed) {
-                        logger.info("[GriefPreventionAddon] Took over '/sethome' access-trust enforcement from GriefPrevention.")
-                    }
-                }
-            }
-        }.onFailure {
-            logger.fine("[GriefPreventionAddon] Could not inspect GriefPrevention commandsRequiringAccessTrust: ${it.message}")
-        }
     }
 
     override fun onDisable() {

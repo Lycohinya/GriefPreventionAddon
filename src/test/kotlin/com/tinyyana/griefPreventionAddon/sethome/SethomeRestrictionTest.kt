@@ -12,8 +12,12 @@ class SethomeRestrictionTest {
         assertTrue(SethomeRestrictionListener.isSethomeCommand("/sethome bed"))
         assertTrue(SethomeRestrictionListener.isSethomeCommand("sethome home1"))
         assertTrue(SethomeRestrictionListener.isSethomeCommand("/esethome"))
+        assertTrue(SethomeRestrictionListener.isSethomeCommand("/createhome"))
+        assertTrue(SethomeRestrictionListener.isSethomeCommand("/ecreatehome"))
         assertTrue(SethomeRestrictionListener.isSethomeCommand("/essentials:sethome myhome"))
         assertTrue(SethomeRestrictionListener.isSethomeCommand("/essentials:esethome"))
+        assertTrue(SethomeRestrictionListener.isSethomeCommand("/essentials:createhome"))
+        assertTrue(SethomeRestrictionListener.isSethomeCommand("/essentials:ecreatehome"))
 
         assertFalse(SethomeRestrictionListener.isSethomeCommand("/home"))
         assertFalse(SethomeRestrictionListener.isSethomeCommand("/spawn"))

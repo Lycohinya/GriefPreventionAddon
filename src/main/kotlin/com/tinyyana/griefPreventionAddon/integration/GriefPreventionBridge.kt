@@ -1,5 +1,7 @@
 package com.tinyyana.griefPreventionAddon.integration
 
+import com.tinyyana.griefPreventionAddon.sethome.SethomeRestrictionListener
+import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import me.ryanhamshire.GriefPrevention.Claim
 import me.ryanhamshire.GriefPrevention.GriefPrevention
 import org.bukkit.Location
@@ -62,7 +64,7 @@ class GriefPreventionBridge(val plugin: Plugin) {
             val top = claim.parent ?: claim
             val id = top.id ?: return@runCatching null
             val ownerUuid = top.ownerID
-            val isOwner = ownerUuid != null && ownerUuid == player.uniqueId
+            val isOwner = (ownerUuid != null && ownerUuid == player.uniqueId) || (claim.ownerID != null && claim.ownerID == player.uniqueId)
             ClaimOwnership(
                 claimId = id,
                 isOwner = isOwner,
@@ -110,6 +112,58 @@ class GriefPreventionBridge(val plugin: Plugin) {
             val playerData = GriefPrevention.instance.dataStore.getPlayerData(playerUuid) ?: return@runCatching emptyList()
             playerData.claims?.toList() ?: emptyList()
         }.getOrDefault(emptyList())
+    }
+
+    /**
+     * 同步單一領地及其子領地的 TNT 爆炸設定至 GriefPrevention Claim 物件。
+     */
+    fun syncClaimExplosives(claimId: Long, allowed: Boolean) {
+        if (!isAvailable()) return
+        runCatching {
+            val claim = GriefPrevention.instance.dataStore.getClaim(claimId) ?: return@runCatching
+            syncClaimExplosives(claim, allowed)
+        }
+    }
+
+    /**
+     * 同步指定 Claim 及其子領地的 TNT 爆炸設定至 GriefPrevention Claim 物件。
+     */
+    fun syncClaimExplosives(claim: Claim, allowed: Boolean) {
+        val top = claim.parent ?: claim
+        top.areExplosivesAllowed = allowed
+        top.children?.forEach { child ->
+            child.areExplosivesAllowed = allowed
+        }
+    }
+
+    /**
+     * 全服啟動/重載時，將所有已儲存的 TNT 設定同步至 GriefPrevention 的記憶體 Claim 物件。
+     */
+    fun syncAllClaimExplosives(store: ClaimSettingsStore) {
+        if (!isAvailable()) return
+        runCatching {
+            val dataStore = GriefPrevention.instance.dataStore ?: return@runCatching
+            val claims = dataStore.claims ?: return@runCatching
+            for (claim in claims) {
+                val id = claim.id ?: continue
+                val allowed = store.isTntAllowed(id)
+                syncClaimExplosives(claim, allowed)
+            }
+        }
+    }
+
+    /**
+     * 自行接管 /sethome 權限檢查，從 GriefPrevention 的 commandsRequiringAccessTrust 移除 sethome 相關指令。
+     */
+    fun takeOverSethomeCommands(): Boolean {
+        if (!isAvailable()) return false
+        return runCatching {
+            val list = GriefPrevention.instance.config_claims_commandsRequiringAccessTrust ?: return@runCatching false
+            list.removeIf { cmd ->
+                val clean = cmd.trim().removePrefix("/").lowercase()
+                clean in SethomeRestrictionListener.SETHOME_COMMANDS
+            }
+        }.getOrDefault(false)
     }
 
     /**

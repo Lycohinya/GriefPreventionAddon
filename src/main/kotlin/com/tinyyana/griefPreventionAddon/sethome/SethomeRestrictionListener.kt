@@ -10,7 +10,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 
 /**
- * Listener for controlling /sethome execution inside claims based on per-claim settings.
+ * 監聽玩家指令，依據領地 per-claim 設定控制 /sethome 在領地內的執行權限。
  */
 class SethomeRestrictionListener(
     private val bridge: GriefPreventionBridge,
@@ -19,11 +19,15 @@ class SethomeRestrictionListener(
 ) : Listener {
 
     companion object {
-        private val SETHOME_COMMANDS = setOf(
+        val SETHOME_COMMANDS = setOf(
             "sethome",
             "esethome",
+            "createhome",
+            "ecreatehome",
             "essentials:sethome",
             "essentials:esethome",
+            "essentials:createhome",
+            "essentials:ecreatehome",
         )
 
         fun isSethomeCommand(rawMessage: String): Boolean {
@@ -39,11 +43,13 @@ class SethomeRestrictionListener(
         if (!bridge.isAvailable()) return
 
         val player = event.player
-        val claim = bridge.getTopClaim(player.location) ?: return
-        val claimId = claim.id ?: return
+        val claim = bridge.getClaimAt(player.location) ?: return
+        val topClaim = claim.parent ?: claim
+        val claimId = topClaim.id ?: return
 
-        // 1. Claim owner is always allowed
-        val isOwner = claim.ownerID != null && claim.ownerID == player.uniqueId
+        // 1. Claim owner is always allowed (both top claim owner and subdivision owner)
+        val isOwner = (topClaim.ownerID != null && topClaim.ownerID == player.uniqueId) ||
+            (claim.ownerID != null && claim.ownerID == player.uniqueId)
         if (isOwner) return
 
         // 2. Players with Access Trust in this claim are allowed
@@ -58,19 +64,11 @@ class SethomeRestrictionListener(
             return
         }
 
-        // 4. Admin claims: allow if not explicitly restricted or if admin permits
-        if (claim.isAdminClaim()) {
-            if (!store.isSethomeAllowed(claimId)) {
-                // By default admin claims may follow server policy
-                return
-            }
-        }
-
-        // 5. Check per-claim setting for untrusted guests
+        // 4. Check per-claim setting for untrusted guests (both player claims and admin claims)
         val allowed = store.isSethomeAllowed(claimId)
         if (!allowed) {
             event.isCancelled = true
-            val ownerName = claim.ownerName ?: lang.raw(player, "gui.owner-admin") ?: "Owner"
+            val ownerName = topClaim.ownerName ?: lang.raw(player, "gui.owner-admin") ?: "Owner"
             player.sendMessage(lang.get(player, "sethome.blocked-in-claim", "owner" to ownerName))
         }
     }
