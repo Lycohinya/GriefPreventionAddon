@@ -50,6 +50,23 @@ class GriefPreventionBridge(val plugin: Plugin) {
         return claim.parent ?: claim
     }
 
+    /**
+     * 忽略高度取得頂層領地：只比對領地的水平範圍，把領地視為一整根柱子。
+     *
+     * GP 的 [me.ryanhamshire.GriefPrevention.Claim.contains] 在 ignoreHeight=false 時會做 3D 判定，
+     * 而地表領地的 lesserBoundaryCorner.y 只比建立當下的地面低數格(GP 的 extendIntoGroundDistance)。
+     * 生怪過濾若沿用 3D 判定，領地底下洞穴／深板岩層的自然生怪一律查不到領地而放行
+     * (史萊姆的 y<40 生成帶、地獄的岩漿立方怪都落在這個區間)，玩家看到的就是「開了還是會生」。
+     * 生怪過濾一律走這條，其他功能(TNT、PVP、資訊查詢)維持原本的 3D 判定。
+     */
+    fun getTopClaimIgnoringHeight(location: Location): Claim? {
+        if (!isAvailable()) return null
+        val claim = runCatching {
+            GriefPrevention.instance.dataStore.getClaimAt(location, true, null)
+        }.getOrNull() ?: return null
+        return claim.parent ?: claim
+    }
+
     fun getClaim(claimId: Long): Claim? {
         if (!isAvailable()) return null
         return runCatching {

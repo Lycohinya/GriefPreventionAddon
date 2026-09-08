@@ -65,6 +65,30 @@ Supports **Paper**, **Lecithin 26.2**, and Paper API compatible server cores wit
 | `/cadmin delete <id>` | `griefpreventionaddon.admin` | Force delete claim and purge database records / 強制刪除領地與設定 |
 | `/cadmin name <id> <alias\|clear>` | `griefpreventionaddon.admin` | Modify alias of any claim / 設定或清除任意領地別名 |
 | `/cadmin set <id> <key> <true\|false>` | `griefpreventionaddon.admin` | Force toggle a claim setting key / 強制設定領地開關數值 |
+| `/cadmin spawntest <type> [reason]` | `griefpreventionaddon.admin` | Fire a real spawn at your feet and report the filter verdict / 在腳下實際觸發一次生成並回報過濾結果 |
+
+---
+
+## 🧟 Natural Mob Filter Policy / 自然生怪過濾政策
+
+`/cmob` 只攔「世界自己跑出來的生怪」，判準是 `CreatureSpawnEvent` 的來源：
+
+| | Spawn reasons |
+|---|---|
+| **攔截 / Blocked** | `NATURAL`、`SLIME_SPLIT`、`PATROL`、`RAID`、`VILLAGE_INVASION`、`REINFORCEMENTS`、`JOCKEY`、`NETHER_PORTAL`、`TRAP` |
+| **放行 / Allowed** | 生怪磚與試煉生怪磚、生怪蛋、指令與插件生成、繁殖與農場產出（含蜂巢、剪毛、水桶）、既有生物的轉化（感染／溺屍化／凍結／豬布林殭屍化／治癒等） |
+
+分類依伺服器端的實體型別與 `SpawnCategory` 判定，不寫死生物名單：
+
+| 類別 | 涵蓋 |
+|---|---|
+| 掠奪者 | `Raider` |
+| 夜魅 | `Phantom`（以半徑 40 格內最近玩家的位置為領地判定錨點） |
+| 史萊姆 | 敵對的 `AbstractCubeMob`（史萊姆、岩漿立方怪，以及日後新增的敵對立方生物）；可養殖的被動立方生物不受影響 |
+| 蝙蝠 | `Ambient` 或 `SpawnCategory.AMBIENT` |
+| 一般敵對 | `Enemy` 或 `SpawnCategory.MONSTER` |
+
+生怪過濾把領地視為一整根柱子（忽略高度），領地底下洞穴層的自然生怪同樣受管；TNT、PVP 與資訊查詢維持 GriefPrevention 原本的 3D 領地判定。區塊生成與區塊載入時就已存在的生物不會發出 `CreatureSpawnEvent`（`CHUNK_GEN` 在 Paper 26.2 已停用），不在 `/cmob` 涵蓋範圍。
 
 ---
 

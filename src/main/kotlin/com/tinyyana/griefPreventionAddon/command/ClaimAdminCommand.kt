@@ -10,12 +10,16 @@ import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
+import com.tinyyana.griefPreventionAddon.toggle.ClaimToggleListener
 import me.ryanhamshire.GriefPrevention.GriefPrevention
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.event.entity.CreatureSpawnEvent
 
 class ClaimAdminCommand(
     private val bridge: GriefPreventionBridge,
@@ -152,7 +156,17 @@ class ClaimAdminCommand(
             return true
         }
 
-        // 7. /cadmin <claimId|alias> (directly open claim settings GUI)
+        // 7. /cadmin spawntest <entityType> [spawnReason] — 在腳下用指定來源實際觸發一次生成，驗證 /cmob 過濾
+        if (sub == "spawntest") {
+            if (player == null) {
+                sender.sendMessage(lang.get("system.player-only"))
+                return true
+            }
+            runSpawnTest(player, args)
+            return true
+        }
+
+        // 8. /cadmin <claimId|alias> (directly open claim settings GUI)
         val allClaims = GriefPrevention.instance.dataStore.claims?.toList() ?: emptyList()
         val claimId = store.findClaimId(args[0], player?.uniqueId, allClaims)
         val claim = if (claimId != null) bridge.getClaim(claimId) else null
@@ -177,11 +191,59 @@ class ClaimAdminCommand(
         return true
     }
 
+    /**
+     * 管理員診斷：在原地以指定 [CreatureSpawnEvent.SpawnReason] 實際生成一次生物，走完整事件鏈，
+     * 回報 /cmob 的分類、目前所在領地與這次是否被擋。用來驗證生怪過濾，不是玩家功能。
+     */
+    private fun runSpawnTest(player: Player, args: Array<out String>) {
+        val typeArg = args.getOrNull(1)
+        if (typeArg == null) {
+            player.sendMessage("§e/cadmin spawntest <entityType> [spawnReason] §7— 預設 NATURAL")
+            return
+        }
+        val type = runCatching { EntityType.valueOf(typeArg.uppercase()) }.getOrNull()
+        val entityClass = type?.entityClass
+        if (type == null || entityClass == null || !LivingEntity::class.java.isAssignableFrom(entityClass)) {
+            player.sendMessage("§c無法辨識的生物類型：$typeArg")
+            return
+        }
+        val reasonArg = args.getOrNull(2) ?: "NATURAL"
+        val reason = runCatching { CreatureSpawnEvent.SpawnReason.valueOf(reasonArg.uppercase()) }.getOrNull()
+        if (reason == null) {
+            player.sendMessage("§c無法辨識的生成來源：$reasonArg")
+            return
+        }
+
+        val location = player.location
+        val claimId = bridge.getTopClaimIgnoringHeight(location)?.id
+        @Suppress("UNCHECKED_CAST")
+        val livingClass = entityClass as Class<out LivingEntity>
+
+        // 先用不受過濾的 CUSTOM 生一隻出來取分類(隨即移除),再用要驗的來源實際跑一次事件鏈
+        val probe = runCatching {
+            player.world.spawn(location, livingClass, CreatureSpawnEvent.SpawnReason.CUSTOM, false) { }
+        }.getOrNull()
+        val key = probe?.let { ClaimToggleListener.categoryKey(it) }
+        probe?.remove()
+
+        val spawned = runCatching {
+            player.world.spawn(location, livingClass, reason, false) { }
+        }.getOrNull()
+        val blocked = spawned == null || !spawned.isValid
+        spawned?.takeIf { it.isValid }?.remove()
+
+        player.sendMessage(
+            "§b[spawntest] §f${type.name} §7reason=§f${reason.name} §7claim=§f${claimId ?: "無"} " +
+                "§7類別=§f${key ?: "不歸類"} §7結果=" + if (blocked) "§a已擋下" else "§c放行",
+        )
+        auditLogger?.log(player.name, "admin-spawntest", "type=${type.name} reason=${reason.name} claim=$claimId blocked=$blocked")
+    }
+
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         if (!sender.hasPermission("griefpreventionaddon.admin") && !sender.isOp) return emptyList()
 
         if (args.size == 1) {
-            val list = mutableListOf("list", "tp", "delete", "name", "set", "help")
+            val list = mutableListOf("list", "tp", "delete", "name", "set", "spawntest", "help")
             val allClaims = GriefPrevention.instance.dataStore.claims ?: emptyList()
             list.addAll(allClaims.take(20).mapNotNull { it.id?.toString() })
             return list.filter { it.startsWith(args[0], ignoreCase = true) }
@@ -189,6 +251,12 @@ class ClaimAdminCommand(
 
         if (args.size == 2) {
             val sub = args[0].lowercase()
+            if (sub == "spawntest") {
+                return EntityType.entries
+                    .filter { it.isSpawnable && it.entityClass?.let(LivingEntity::class.java::isAssignableFrom) == true }
+                    .map { it.name.lowercase() }
+                    .filter { it.startsWith(args[1], ignoreCase = true) }
+            }
             if (sub == "tp" || sub == "delete" || sub == "name" || sub == "set") {
                 val allClaims = GriefPrevention.instance.dataStore.claims ?: emptyList()
                 return allClaims.take(20).mapNotNull { it.id?.toString() }.filter { it.startsWith(args[1], ignoreCase = true) }
