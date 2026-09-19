@@ -2,8 +2,8 @@ package com.tinyyana.griefPreventionAddon.gui
 
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
 import com.tinyyana.griefPreventionAddon.command.ClaimSpawnCommand
-import com.tinyyana.griefPreventionAddon.gui.menu.MenuSize
-import com.tinyyana.griefPreventionAddon.gui.menu.NavigationSlots
+import com.tinyyana.lycoLib.menu.MenuSize
+import com.tinyyana.lycoLib.menu.NavigationSlots
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge

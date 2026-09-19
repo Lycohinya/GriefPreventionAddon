@@ -1,8 +1,9 @@
 package com.tinyyana.griefPreventionAddon.gui
 
-import com.tinyyana.griefPreventionAddon.gui.menu.MenuBuilder
-import com.tinyyana.griefPreventionAddon.gui.menu.MenuSize
-import com.tinyyana.griefPreventionAddon.gui.menu.NavigationSlots
+import com.tinyyana.lycoLib.menu.MenuBuilder
+import com.tinyyana.lycoLib.menu.MenuShell
+import com.tinyyana.lycoLib.menu.MenuSize
+import com.tinyyana.lycoLib.menu.NavigationSlots
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
@@ -61,7 +62,10 @@ class ClaimAdminListGuiService(
         val title = titleTemplate
             .replace("{page}", currentPage.toString())
             .replace("{totalPages}", totalPages.toString())
-        val inv = builder.build(holder, MenuSize.LARGE, title)
+        // 2.0 殼層背景。沒有資源包時 title 退回純文字、`decorated` 是 false,收尾照舊填玻璃。
+        val shell = MenuShell.page(MenuSize.LARGE)
+        holder.decorated = MenuShell.decorated(player, shell)
+        val inv = builder.build(holder, MenuSize.LARGE, MenuShell.title(player, shell, title))
         holder.setInventory(inv)
 
         render(inv, holder, allClaims, filtered, player)
@@ -237,7 +241,7 @@ class ClaimAdminListGuiService(
             fallback = Material.BARRIER,
         )
 
-        // 5. Fill empty background
-        builder.fillEmpty(inv, Material.GRAY_STAINED_GLASS_PANE, "filler")
+        // 5. 有背景就只放分享按鈕,沒背景才填玻璃(見 PLAYER_SHELL.md §3)
+        builder.finish(inv, holder.decorated)
     }
 }

@@ -92,6 +92,9 @@ class GriefPreventionAddonPlugin : JavaPlugin() {
 
         // Register Listeners
         val pm = server.pluginManager
+        // 領地設定/管理面板改用殼層背景之後不再填玻璃,空格是真的空的——拖曳要由程式擋
+        // (見 docs/ux/PLAYER_SHELL.md §3)。一個插件只需註冊一次。
+        pm.registerEvents(com.tinyyana.lycoLib.menu.MenuGuardListener(), this)
         pm.registerEvents(TntExplosionListener(griefPreventionBridge, claimSettingsStore), this)
         pm.registerEvents(ClaimToggleListener(griefPreventionBridge, claimSettingsStore), this)
         pm.registerEvents(ClaimLifecycleListener(claimSettingsStore, griefPreventionBridge), this)

@@ -16,11 +16,15 @@ dependencies {
     compileOnly(libs.kotlin.stdlib)
     // GriefPrevention 僅供編譯期參照 API 型別,不 shade;執行期呼叫做 softdepend 存在檢查
     compileOnly(libs.griefprevention.api)
+    // 選單引擎硬依賴(plugin.yml depend),不 shade,執行期由 Paper 從 plugins/ 載入 LycoLib 本體
+    // (比照 LycoQuest 的做法——殼層背景、GuardedMenu 與 icon 目錄都靠這個型別存取)
+    compileOnly("com.tinyyana:LycoLib:0.1.0")
 
     testImplementation(libs.paper.api)
     testImplementation(libs.sqlite.jdbc)
     testImplementation(kotlin("test"))
     testImplementation(libs.griefprevention.api)
+    testImplementation("com.tinyyana:LycoLib:0.1.0")
 }
 
 kotlin {

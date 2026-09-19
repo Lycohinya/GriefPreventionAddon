@@ -15,6 +15,8 @@ website: https://tinyyana.com
 libraries:
   - org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.4.20-Beta1
 
+# 選單引擎硬依賴——沒裝 LycoLib 就無法啟動(比照 LycoQuest)
+depend: [ LycoLib ]
 softdepend: [ GriefPrevention ]
 
 commands:
