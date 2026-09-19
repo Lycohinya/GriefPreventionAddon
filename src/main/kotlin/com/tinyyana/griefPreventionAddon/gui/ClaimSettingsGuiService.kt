@@ -27,15 +27,20 @@ class ClaimSettingsGuiService(
         const val SPAWN_SLOT = 3
         const val ADMIN_PANEL_SLOT = 4
 
-        const val TNT_SLOT = 9
-        const val PVP_SLOT = 10
-        const val SETHOME_SLOT = 11
+        // 2026-09-19 第二輪:「進出與權限」與「生物與環境」各自一列,col 0 放群組標籤、
+        // 內容從 col 1 起連續排(見 CHEST_UI_DESIGN_SYSTEM.md §9.1 第 1 條)。
+        // 之前 8 顆開關擠在同一片不分組的格子裡,玩家只能一格一格 hover 猜哪些是同一類。
+        const val ACCESS_GROUP_LABEL_SLOT = 9
+        const val TNT_SLOT = 10
+        const val PVP_SLOT = 11
+        const val SETHOME_SLOT = 12
 
-        const val MOB_HOSTILE_SLOT = 18
-        const val MOB_RAIDER_SLOT = 19
-        const val MOB_PHANTOM_SLOT = 20
-        const val MOB_SLIME_SLOT = 21
-        const val MOB_AMBIENT_SLOT = 22
+        const val MOB_GROUP_LABEL_SLOT = 18
+        const val MOB_HOSTILE_SLOT = 19
+        const val MOB_RAIDER_SLOT = 20
+        const val MOB_PHANTOM_SLOT = 21
+        const val MOB_SLIME_SLOT = 22
+        const val MOB_AMBIENT_SLOT = 23
     }
 
     val slotToSetting = mutableMapOf<Int, ClaimSettingDefinition>()
@@ -164,6 +169,8 @@ class ClaimSettingsGuiService(
             "",
             teleportAction,
         )
+        // 「傳送」是常駐可點功能,不是這一頁此刻在要求玩家做的那件事,不掛光暈——
+        // 光暈留給「主要行動」(見 CHEST_UI_DESIGN_SYSTEM.md §3.1/§3.2,一頁至多 0 或 1 個)。
         builder.placeIcon(
             inventory = inv,
             slot = TELEPORT_SLOT,
@@ -171,7 +178,6 @@ class ClaimSettingsGuiService(
             name = teleportTitle,
             lore = teleportLore,
             fallback = Material.ENDER_PEARL,
-            glint = true,
         )
 
         // 3. Context Band: Rename / Alias Action (Slot 2)
@@ -195,6 +201,8 @@ class ClaimSettingsGuiService(
             "",
             renameAction,
         )
+        // 是否已設別名這件事已經寫在 lore 的「目前別名」那行,不需要再靠光暈重複講一次
+        // ——光暈只留給主要行動(見上一顆按鈕的註解)。
         builder.placeIcon(
             inventory = inv,
             slot = RENAME_SLOT,
@@ -202,7 +210,6 @@ class ClaimSettingsGuiService(
             name = renameTitle,
             lore = renameLore,
             fallback = Material.NAME_TAG,
-            glint = aliasDisplay != null,
         )
 
         // 3b. Context Band: Spawn Point (Slot 4)
@@ -232,6 +239,7 @@ class ClaimSettingsGuiService(
         if (spawnRawSet) {
             spawnLore.add(lang.raw(player, "gui.btn-spawn-action-clear") ?: "<yellow><bold>Right-Click</bold></yellow><white> Clear spawn</white>")
         }
+        // 同上,是否已設落腳點已經寫在 lore 的「目前落腳點」那行,不用光暈重複講
         builder.placeIcon(
             inventory = inv,
             slot = SPAWN_SLOT,
@@ -239,7 +247,6 @@ class ClaimSettingsGuiService(
             name = spawnTitle,
             lore = spawnLore,
             fallback = Material.LODESTONE,
-            glint = spawn != null,
         )
 
         // 4. Context Band: Admin panel shortcut (Slot 3)
@@ -269,7 +276,23 @@ class ClaimSettingsGuiService(
             )
         }
 
-        // 5. Setting Toggle Cards (Row 1 & Row 2)
+        // 5. Setting Toggle Cards (Row 1 & Row 2),各自一條 group 帶:col 0 群組標籤、
+        // 內容從 col 1 起連續排(見 CHEST_UI_DESIGN_SYSTEM.md §9.1 第 1 條)。
+        // 純裝飾,不註冊 action、lore 至多一行——跟 §3.1「群組標籤」角色一致。
+        builder.place(
+            inventory = inv,
+            slot = ACCESS_GROUP_LABEL_SLOT,
+            material = Material.OAK_SIGN,
+            name = "<color:#ffd166><bold>進出與權限</bold></color>",
+            lore = listOf("<gray>誰能不能在這塊花域裡做什麼</gray>"),
+        )
+        builder.place(
+            inventory = inv,
+            slot = MOB_GROUP_LABEL_SLOT,
+            material = Material.OAK_LEAVES,
+            name = "<color:#ffd166><bold>生物與環境</bold></color>",
+            lore = listOf("<gray>哪些生物不會在這裡自然出現</gray>"),
+        )
         slotToSetting.forEach { (slot, def) ->
             val enabled = def.isEnabled(store, holder.claimId)
             val stateText = def.getStatusLabel(lang, player, enabled)
