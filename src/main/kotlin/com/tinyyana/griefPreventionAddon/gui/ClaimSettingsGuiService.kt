@@ -75,7 +75,11 @@ class ClaimSettingsGuiService(
         val titleTemplate = lang.raw(player, titleKey) ?: "Claim Settings #{claimId}"
         val title = titleTemplate.replace("{claimId}", info.claimId.toString())
         // 2.0 殼層背景。沒有資源包時 title 退回純文字、`decorated` 是 false,收尾照舊填玻璃。
-        val shell = MenuShell.page(MenuSize.MEDIUM)
+        //
+        // 三組東西各自一列(狀態與操作 / 進出與權限 / 生物與環境),但背景一直是 `page` 的
+        // 單一底面——分組只存在於格位,畫面上仍然是一整片同質的開關(2026-09-20 Yanaa)。
+        // `banded` 讓每一組落在自己的底面上,分組與背景從此不可能分岔。
+        val shell = MenuShell.banded(MenuSize.MEDIUM, listOf(0, 1, 2))
         holder.decorated = MenuShell.decorated(player, shell)
         val inv = builder.build(holder, MenuSize.MEDIUM, MenuShell.title(player, shell, title))
         holder.setInventory(inv)

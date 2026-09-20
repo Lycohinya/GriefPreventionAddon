@@ -63,7 +63,10 @@ class ClaimAdminListGuiService(
             .replace("{page}", currentPage.toString())
             .replace("{totalPages}", totalPages.toString())
         // 2.0 殼層背景。沒有資源包時 title 退回純文字、`decorated` 是 false,收尾照舊填玻璃。
-        val shell = MenuShell.page(MenuSize.LARGE)
+        //
+        // 兩組:上面四列是領地卡片,第五列是統計與篩選。它們是兩種東西(內容 vs 對內容的操作),
+        // 以前畫在同一片底上,所以最後一列讀起來像「第三十七張卡片」。
+        val shell = MenuShell.banded(MenuSize.LARGE, listOf(0, 4))
         holder.decorated = MenuShell.decorated(player, shell)
         val inv = builder.build(holder, MenuSize.LARGE, MenuShell.title(player, shell, title))
         holder.setInventory(inv)
