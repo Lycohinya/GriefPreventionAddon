@@ -1,5 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
@@ -56,7 +58,7 @@ class ClaimTpCommand(
         val claimId = store.findClaimId(input, player.uniqueId, playerClaims)
 
         if (claimId == null) {
-            player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to input))
+            player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to escapeForMiniMessageTemplate(input)))
             if (playerClaims.isNotEmpty()) {
                 sendClaimsList(player, playerClaims)
             }
@@ -75,18 +77,15 @@ class ClaimTpCommand(
 
     private fun sendClaimsList(player: Player, claims: List<Claim>) {
         player.sendMessage(lang.get(player, "name.list-header"))
-        val defaultName = lang.raw(player, "gui.card-status-no-alias") ?: "Unnamed Claim"
         for (claim in claims) {
             val id = claim.id ?: continue
-            val alias = store.getAlias(id)
-            val displayName = if (!alias.isNullOrBlank()) alias else defaultName
-            val targetParam = alias ?: id.toString()
+            val display = ClaimDisplayName.resolve(store, id)
             player.sendMessage(
                 lang.get(
                     player,
-                    "name.list-entry",
-                    "target" to targetParam,
-                    "name" to displayName,
+                    "name.claim-entry",
+                    "target" to display.targetParam,
+                    "name" to escapeForMiniMessageTemplate(display.name),
                     "claimId" to id.toString(),
                     "width" to claim.width.toString(),
                     "height" to claim.height.toString(),
@@ -102,11 +101,8 @@ class ClaimTpCommand(
             val suggestions = mutableListOf<String>()
             for (c in playerClaims) {
                 val id = c.id ?: continue
-                val name = store.getAlias(id)
-                if (!name.isNullOrBlank()) {
-                    suggestions.add(name)
-                }
-                suggestions.add(id.toString())
+                // 一塊花域一個候選:有別名就只給別名,沒有才給 #編號(兩種輸入 findClaimId 都認)
+                suggestions.add(ClaimDisplayName.resolve(store, id).completion)
             }
             return suggestions.filter { it.startsWith(args[0], ignoreCase = true) }
         }

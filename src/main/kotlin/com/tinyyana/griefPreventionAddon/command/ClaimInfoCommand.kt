@@ -1,5 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
@@ -31,8 +33,8 @@ class ClaimInfoCommand(
             return true
         }
 
-        val alias = store.getAlias(info.claimId)
-        val aliasText = if (!alias.isNullOrBlank()) "「$alias」 " else ""
+        val display = ClaimDisplayName.resolve(store, info.claimId)
+        val aliasText = if (display.hasAlias) "${display.decorated} " else ""
 
         if (info.isAdminClaim) {
             player.sendMessage(
@@ -40,7 +42,7 @@ class ClaimInfoCommand(
                     player,
                     "claim-info.admin-claim",
                     "claimId" to info.claimId.toString(),
-                    "alias" to aliasText,
+                    "alias" to escapeForMiniMessageTemplate(aliasText),
                     "width" to info.width.toString(),
                     "height" to info.height.toString(),
                     "area" to info.area.toString(),
@@ -54,7 +56,7 @@ class ClaimInfoCommand(
                     "claim-info.owned",
                     "owner" to (info.ownerName ?: ownerDefault),
                     "claimId" to info.claimId.toString(),
-                    "alias" to aliasText,
+                    "alias" to escapeForMiniMessageTemplate(aliasText),
                     "width" to info.width.toString(),
                     "height" to info.height.toString(),
                     "area" to info.area.toString(),

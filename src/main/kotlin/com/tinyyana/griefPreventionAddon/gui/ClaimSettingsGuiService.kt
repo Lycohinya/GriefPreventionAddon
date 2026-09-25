@@ -4,7 +4,9 @@ import com.tinyyana.lycoLib.menu.MenuBuilder
 import com.tinyyana.lycoLib.menu.MenuShell
 import com.tinyyana.lycoLib.menu.MenuSize
 import com.tinyyana.lycoLib.menu.NavigationSlots
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
@@ -101,22 +103,27 @@ class ClaimSettingsGuiService(
             else -> lang.raw(player, "gui.type-normal") ?: "Player Claim"
         }
         val ownerStr = info.ownerName ?: lang.raw(player, "gui.owner-admin") ?: "Admin / Server"
-        val alias = store.getAlias(holder.claimId)
-        val aliasDisplay = if (!alias.isNullOrBlank()) "「$alias」" else null
+        val display = ClaimDisplayName.resolve(store, holder.claimId)
+        val aliasDisplay = if (display.hasAlias) display.decorated else null
+        // GUI 的 name/lore 也是走 MiniMessage 解析(見 MenuBuilder.placeIcon),別名一樣要跳脫,
+        // 否則 /cadmin name(完全沒驗證字元)塞入 `<`、`>` 會破壞這裡的標籤結構
+        // ——同一顆 escapeForMiniMessageTemplate 給聊天訊息(LanguageManager.get)跟這裡共用。
+        val escapedAlias = display.alias?.let { escapeForMiniMessageTemplate(it) }
+        val escapedAliasDisplay = escapedAlias?.let { "「$it」" }
 
         val titleTemplate = if (aliasDisplay != null) {
             lang.raw(player, "gui.card-status-title-named") ?: "<color:#ff8fc4><bold>Claim Status: {alias}</bold></color> <color:#a8a8a8>#{claimId}</color>"
         } else {
             lang.raw(player, "gui.card-status-title") ?: "<color:#ff8fc4><bold>Claim Status</bold></color> <color:#a8a8a8>#{claimId}</color>"
         }
-        val titleText = titleTemplate.replace("{claimId}", holder.claimId.toString()).replace("{alias}", alias ?: "")
+        val titleText = titleTemplate.replace("{claimId}", holder.claimId.toString()).replace("{alias}", escapedAlias ?: "")
 
         val headerLore = mutableListOf(
             lang.raw(player, "gui.card-status-desc") ?: "<gray>Detailed information of the current claim</gray>",
             "",
             (lang.raw(player, "gui.card-status-owner") ?: "<dark_gray>Owner</dark_gray> <color:#f5f5f5>{owner}</color>").replace("{owner}", ownerStr),
             if (aliasDisplay != null) {
-                (lang.raw(player, "gui.card-status-alias") ?: "<dark_gray>Alias</dark_gray> <color:#ffd166>{alias}</color>").replace("{alias}", alias.orEmpty())
+                (lang.raw(player, "gui.card-status-alias") ?: "<dark_gray>Alias</dark_gray> <color:#ffd166>{alias}</color>").replace("{alias}", escapedAlias.orEmpty())
             } else {
                 lang.raw(player, "gui.card-status-no-alias") ?: "<dark_gray>Alias</dark_gray> <color:#a8a8a8>None</color>"
             },
@@ -158,7 +165,7 @@ class ClaimSettingsGuiService(
             lang.raw(player, "gui.btn-teleport-desc-center") ?: "<gray>Click to teleport to the safe center of this claim</gray>"
         }
         val teleportTarget = (lang.raw(player, "gui.btn-teleport-target") ?: "<dark_gray>Target</dark_gray> <color:#6fd8e8>{target}</color>")
-            .replace("{target}", aliasDisplay ?: "#${holder.claimId}")
+            .replace("{target}", escapedAliasDisplay ?: "#${holder.claimId}")
         val teleportCoords = (lang.raw(player, "gui.btn-teleport-coords") ?: "<dark_gray>Coords</dark_gray> <color:#a8a8a8>({world} {x}, {z})</color>")
             .replace("{world}", destLoc.world?.name ?: "world")
             .replace("{x}", destLoc.blockX.toString())
@@ -188,7 +195,7 @@ class ClaimSettingsGuiService(
         val renameTitle = lang.raw(player, "gui.btn-rename-name") ?: "<color:#ffd166><bold>Set Claim Alias</bold></color>"
         val renameDesc = lang.raw(player, "gui.btn-rename-desc") ?: "<gray>Assign a memorable name</gray>"
         val renameCurrent = if (aliasDisplay != null) {
-            (lang.raw(player, "gui.btn-rename-current") ?: "<dark_gray>Current</dark_gray> <color:#ffd166>{alias}</color>").replace("{alias}", alias.orEmpty())
+            (lang.raw(player, "gui.btn-rename-current") ?: "<dark_gray>Current</dark_gray> <color:#ffd166>{alias}</color>").replace("{alias}", escapedAlias.orEmpty())
         } else {
             (lang.raw(player, "gui.btn-rename-current-none") ?: "<dark_gray>Current</dark_gray> <color:#a8a8a8>None</color>").replace("{claimId}", holder.claimId.toString())
         }

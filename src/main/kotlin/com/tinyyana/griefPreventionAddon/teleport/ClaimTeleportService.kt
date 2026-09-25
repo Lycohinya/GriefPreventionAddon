@@ -1,6 +1,8 @@
 package com.tinyyana.griefPreventionAddon.teleport
 
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
@@ -92,13 +94,12 @@ class ClaimTeleportService(
             player.teleportAsync(targetLoc).thenAccept { success ->
                 if (success) {
                     player.playSound(targetLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f)
-                    val alias = store.getAlias(claimId)
-                    val displayName = if (!alias.isNullOrBlank()) "「$alias」" else "#$claimId"
+                    val display = ClaimDisplayName.resolve(store, claimId)
                     player.sendMessage(
                         lang.get(
                             player,
                             if (customSpawn != null) "teleport.success-custom" else "teleport.success",
-                            "name" to displayName,
+                            "name" to escapeForMiniMessageTemplate(display.decorated),
                             "claimId" to claimId.toString(),
                             "x" to targetLoc.blockX.toString(),
                             "y" to targetLoc.blockY.toString(),

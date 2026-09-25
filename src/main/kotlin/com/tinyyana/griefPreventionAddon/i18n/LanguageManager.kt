@@ -13,6 +13,43 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 /**
+ * 把使用者可控文字(領地別名、玩家名等)插入 MiniMessage 模板前先跳脫。
+ *
+ * 根因(2026-09-25 /ctp 別名顯示異常):模板用 `{token}` 做純字串取代,取代完才
+ * `mm.deserialize()`,別名允許含單引號(ClaimNameCommand.INVALID_CHARS 沒禁,
+ * /cadmin name 更完全沒驗證)。真正炸掉的是 `name.list-entry`/`name.set-success`
+ * 把同一個 `{name}` 塞進 `<hover:show_text:'...'>`/`<click:run_command:'...'>` 這類
+ * 帶單引號的標籤參數裡:別名裡的 `'` 提早結束參數,MiniMessage 整段解析失敗、
+ * 退回顯示原始標籤字串。那兩個 key 已經換成不重複塞別名進引號的新 key
+ * (`name.claim-entry`/`name.alias-set-success`,click 目標一律用領地編號),
+ * 從結構上避開這個坑,不是靠這裡的跳脫解決。
+ *
+ * 這裡只跳脫 `<` 跟 `\`:實測過 MiniMessage 對 `\<` 的還原不分是否在標籤參數裡都會生效,
+ * 但 `\'`、`\"`、`\>` 只有在真的位於一個「已開啟的標籤/引號參數」裡才會被還原——
+ * 別名一般都是插在標籤外的一般文字(如 `<bold>{name}</bold>`),對這種位置的
+ * 單引號/雙引號/右角括號加反斜線只會讓反斜線原封不動顯示出來,不是修好而是新增一個
+ * 看得到反斜線的顯示 bug。所以只保留在任何位置都安全的 `<`(擋住 /cadmin 塞入
+ * 完整標籤,例如別名寫 `<red>...`)跟 `\`(擋雙重跳脫)。
+ *
+ * **只在呼叫端包住使用者可控的值**(別名、玩家打的目標字串),不在 `LanguageManager.get` 裡
+ * 一律跳脫:有些 placeholder 的值本身就是 MiniMessage(例如沒有別名時代入的
+ * `gui.card-status-no-alias`),全面跳脫會把那些標籤原文印出來。
+ */
+fun escapeForMiniMessageTemplate(value: String): String {
+    val sb = StringBuilder(value.length + 8)
+    for (c in value) {
+        when (c) {
+            '\\', '<' -> {
+                sb.append('\\')
+                sb.append(c)
+            }
+            else -> sb.append(c)
+        }
+    }
+    return sb.toString()
+}
+
+/**
  * Multi-language message and localization manager.
  *
  * Supports client-locale auto-detection with fallback to the configured default language (default zh_TW).

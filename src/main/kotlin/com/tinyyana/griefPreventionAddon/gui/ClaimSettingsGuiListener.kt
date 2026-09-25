@@ -1,5 +1,6 @@
 package com.tinyyana.griefPreventionAddon.gui
 
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
 import com.tinyyana.griefPreventionAddon.command.ClaimSpawnCommand
 import com.tinyyana.lycoLib.menu.MenuSize
@@ -62,7 +63,8 @@ class ClaimSettingsGuiListener(
         if (event.slot == ClaimSettingsGuiService.RENAME_SLOT) {
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
             player.closeInventory()
-            val currentAlias = store.getAlias(holder.claimId) ?: (lang.raw(player, "gui.card-status-no-alias") ?: "None")
+            val currentAlias = store.getAlias(holder.claimId)?.let(::escapeForMiniMessageTemplate)
+                ?: (lang.raw(player, "gui.card-status-no-alias") ?: "None")
             player.sendMessage(lang.get(player, "name.gui-prompt-header"))
             player.sendMessage(lang.get(player, "name.gui-prompt-actions",
                 "claimId" to holder.claimId.toString(),

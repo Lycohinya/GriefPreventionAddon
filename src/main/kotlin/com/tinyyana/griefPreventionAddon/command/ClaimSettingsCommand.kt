@@ -1,5 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiService
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
@@ -38,7 +40,7 @@ class ClaimSettingsCommand(
             val input = args[0]
             val claimId = store.findClaimId(input, player.uniqueId, playerClaims)
             if (claimId == null) {
-                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to input))
+                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to escapeForMiniMessageTemplate(input)))
                 return true
             }
             val target = bridge.getClaim(claimId)
@@ -84,11 +86,8 @@ class ClaimSettingsCommand(
             val suggestions = mutableListOf<String>()
             for (c in playerClaims) {
                 val id = c.id ?: continue
-                val name = store.getAlias(id)
-                if (!name.isNullOrBlank()) {
-                    suggestions.add(name)
-                }
-                suggestions.add(id.toString())
+                // 一塊花域一個候選:有別名就只給別名,沒有才給 #編號(兩種輸入 findClaimId 都認)
+                suggestions.add(ClaimDisplayName.resolve(store, id).completion)
             }
             return suggestions.filter { it.startsWith(args[0], ignoreCase = true) }
         }

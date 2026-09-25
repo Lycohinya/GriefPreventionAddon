@@ -1,5 +1,6 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
 import com.tinyyana.griefPreventionAddon.gui.ClaimAdminListGuiService
 import com.tinyyana.griefPreventionAddon.gui.ClaimSettingRegistry
@@ -75,7 +76,7 @@ class ClaimAdminCommand(
             val targetClaimId = store.findClaimId(args[1], player.uniqueId, allClaims)
             val claim = if (targetClaimId != null) bridge.getClaim(targetClaimId) else null
             if (claim == null) {
-                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to args[1]))
+                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to escapeForMiniMessageTemplate(args[1])))
                 return true
             }
             player.sendMessage(lang.get(player, "admin.teleported", "claimId" to claim.id.toString()))
@@ -128,7 +129,7 @@ class ClaimAdminCommand(
             if (newName == null) {
                 sender.sendMessage(lang.get(player, "name.cleared", "claimId" to id.toString()))
             } else {
-                sender.sendMessage(lang.get(player, "name.set-success", "claimId" to id.toString(), "name" to newName))
+                sender.sendMessage(lang.get(player, "name.alias-set-success", "claimId" to id.toString(), "name" to escapeForMiniMessageTemplate(newName)))
             }
             auditLogger?.log(sender.name, "admin-set-alias", "claim=$id alias=$newName")
             return true

@@ -60,12 +60,20 @@ name:
   gui-prompt-header: "<color:#f9a8d4><bold>❀ Enter desired claim alias in chat:</bold></color>"
   gui-prompt-actions: "  Current Claim: <color:#ffd166>{current}</color> (#{claimId})\n  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[Type /cname <alias>]</bold></color></click>   <click:suggest_command:'/cname home'><color:#ffd166>[home]</color></click>   <click:suggest_command:'/cname farm'><color:#ffd166>[farm]</color></click>   <click:run_command:'/cname clear'><color:#fca5a5>[Clear Alias]</color></click>"
   set-success: "<color:#f9a8d4>❀ Successfully set alias of claim <color:#6fd8e8>#{claimId}</color> to: <color:#ffd166><bold>\"{name}\"</bold></color></color>\n  👉 You can now teleport back anytime via <click:run_command:'/ctp {name}'><hover:show_text:'<gray>Click to teleport</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click>!"
+  # 2026-09-25: see zh_TW's alias-set-success comment. Old key kept for on-disk files that
+  # already have it (upgrade only fills missing keys); code now uses this one, whose click
+  # target is the claim id (never the alias) so an apostrophe in the alias can't break the
+  # quoted run_command argument.
+  alias-set-success: "<color:#f9a8d4>❀ Successfully set alias of claim <color:#6fd8e8>#{claimId}</color> to: <color:#ffd166><bold>\"{name}\"</bold></color></color>\n  👉 You can now teleport back anytime via <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>Click to teleport</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click>!"
   cleared: "<color:#f9a8d4>❀ Cleared custom alias of claim <color:#6fd8e8>#{claimId}</color> (reverted to ID #{claimId}).</color>"
   invalid-name: "<red>Invalid claim alias! Length must be 1-20 characters, cannot be purely numeric, and cannot contain spaces or special symbols.</red>"
   duplicate-name: "<red>Another claim (#{otherId}) owned by you already uses the alias \"{name}\"! Please choose a different name.</red>"
   usage: "<yellow>Usage: /cname <alias> or /cname clear or /cname <claimId> <alias></yellow>"
   list-header: "<color:#f9a8d4><bold>❀ Your Claims List</bold></color><color:#a8a8a8> (Click to teleport)</color>"
   list-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>Click to teleport to {name}</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[Teleport]</bold></color></hover></click>"
+  # 2026-09-25: see zh_TW's claim-entry comment (root cause of the /ctp alias display bug).
+  # Old key kept for on-disk files that already have it; code now uses this one.
+  claim-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>Click to teleport to this claim</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[Teleport]</bold></color></hover></click>"
   claim-blocks-info: "<color:#a8a8a8>Available Claim Blocks: <color:#ffd166><bold>{remaining}</bold></color> / {total} blocks</color>"
 
 teleport:

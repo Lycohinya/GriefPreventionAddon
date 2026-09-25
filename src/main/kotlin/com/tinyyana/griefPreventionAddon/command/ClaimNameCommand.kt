@@ -1,5 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
@@ -73,7 +75,7 @@ class ClaimNameCommand(
         } else {
             val claimId = store.findClaimId(args[0], player.uniqueId, playerClaims)
             if (claimId == null) {
-                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to args[0]))
+                player.sendMessage(lang.get(player, "teleport.invalid-target", "target" to escapeForMiniMessageTemplate(args[0])))
                 return true
             }
             val claim = bridge.getClaim(claimId)
@@ -119,7 +121,7 @@ class ClaimNameCommand(
                         lang.get(
                             player,
                             "name.duplicate-name",
-                            "name" to cleanAlias,
+                            "name" to escapeForMiniMessageTemplate(cleanAlias),
                             "otherId" to otherId.toString(),
                         ),
                     )
@@ -132,9 +134,9 @@ class ClaimNameCommand(
         player.sendMessage(
             lang.get(
                 player,
-                "name.set-success",
+                "name.alias-set-success",
                 "claimId" to claimId.toString(),
-                "name" to cleanAlias,
+                "name" to escapeForMiniMessageTemplate(cleanAlias),
             ),
         )
         auditLogger?.log(player.name, "claim-alias-set", "claim=$claimId alias=$cleanAlias")
@@ -146,7 +148,7 @@ class ClaimNameCommand(
         val playerClaims = bridge.getClaimsForPlayer(player.uniqueId)
         if (args.size == 1) {
             val suggestions = mutableListOf("clear")
-            suggestions.addAll(playerClaims.mapNotNull { it.id?.toString() })
+            suggestions.addAll(playerClaims.mapNotNull { c -> c.id?.let { ClaimDisplayName.resolve(store, it).completion } })
             return suggestions.filter { it.startsWith(args[0], ignoreCase = true) }
         }
         if (args.size == 2) {

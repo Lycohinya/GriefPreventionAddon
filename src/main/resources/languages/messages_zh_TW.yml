@@ -60,12 +60,21 @@ name:
   gui-prompt-header: "<color:#f9a8d4><bold>❀ 請在聊天框輸入欲設定的花域別名：</bold></color>"
   gui-prompt-actions: "  目前花域：<color:#ffd166>{current}</color> (#{claimId})\n  👉 <click:suggest_command:'/cname '><color:#6fd8e8><bold>[點擊填寫 /cname <新別名>]</bold></color></click>   <click:suggest_command:'/cname 主家'><color:#ffd166>[主家]</color></click>   <click:suggest_command:'/cname 農場'><color:#ffd166>[農場]</color></click>   <click:run_command:'/cname clear'><color:#fca5a5>[清除別名]</color></click>"
   set-success: "<color:#f9a8d4>❀ 成功將花域 <color:#6fd8e8>#{claimId}</color> 的別名設定為：<color:#ffd166><bold>「{name}」</bold></color></color>\n  👉 現在你可以隨時輸入 <click:run_command:'/ctp {name}'><hover:show_text:'<gray>點擊立即傳送</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click> 瞬間傳送回來！"
+  # 2026-09-25:set-success 的 click 目標把別名塞進單引號 run_command 參數,別名含單引號時會提早結束
+  # 參數、整段解析失敗。舊 key 保留給已存在的 on-disk languages 檔(自動升級只補缺的 key,
+  # 不會覆蓋既有內容),新程式碼改用這個 key,click 目標固定用編號、不再重複塞別名進引號裡。
+  alias-set-success: "<color:#f9a8d4>❀ 成功將花域 <color:#6fd8e8>#{claimId}</color> 的別名設定為：<color:#ffd166><bold>「{name}」</bold></color></color>\n  👉 現在你可以隨時輸入 <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>點擊立即傳送</gray>'><color:#6fd8e8><bold>/ctp {name}</bold></color></hover></click> 瞬間傳送回來！"
   cleared: "<color:#f9a8d4>❀ 已清除花域 <color:#6fd8e8>#{claimId}</color> 的自訂別名（恢復使用編號 #{claimId}）。</color>"
   invalid-name: "<red>無效的花域別名！長度需為 1-20 字元，不可為純數字或包含斜線、空格等特殊符號。</red>"
   duplicate-name: "<red>你名下的另一塊花域 (#{otherId}) 已經使用了「{name}」這個別名！請使用不同名稱。</red>"
   usage: "<yellow>用法：/cname <別名> 或 /cname clear (清除別名) 或 /cname <編號> <別名></yellow>"
   list-header: "<color:#f9a8d4><bold>❀ 你的花域清單</bold></color><color:#a8a8a8> (點擊即可傳送)</color>"
   list-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>點擊傳送至 {name}</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[傳送]</bold></color></hover></click>"
+  # 2026-09-25 /ctp 別名顯示異常根因:上面 list-entry 把 {name} 塞進單引號 hover 參數,
+  # 別名含單引號時提早結束參數、整段標籤解析失敗,玩家看到原始標籤字串而不是名字。
+  # 舊 key 保留給已存在的 on-disk languages 檔,新程式碼改用這個 key:hover 文字不再重複塞別名,
+  # {name} 只在標籤外的一般文字出現一次,不受別名含特殊字元影響。
+  claim-entry: "  <click:run_command:/claimtp {target}><hover:show_text:'<gray>點擊傳送至此花域</gray>'><color:#ffd166>❀</color> <color:#ff8fc4><bold>{name}</bold></color> <color:#a8a8a8>(#{claimId} · {width}×{height})</color> <color:#6fd8e8><bold>[傳送]</bold></color></hover></click>"
   claim-blocks-info: "<color:#a8a8a8>可用花域格數：<color:#ffd166><bold>{remaining}</bold></color> / {total} 格</color>"
 
 teleport:

@@ -1,5 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
+import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
+import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
@@ -33,18 +35,15 @@ class ClaimsListCommand(
         }
 
         player.sendMessage(lang.get(player, "name.list-header"))
-        val defaultName = lang.raw(player, "gui.card-status-no-alias") ?: "Unnamed Claim"
         for (claim in playerClaims) {
             val id = claim.id ?: continue
-            val alias = store.getAlias(id)
-            val displayName = if (!alias.isNullOrBlank()) alias else defaultName
-            val targetParam = alias ?: id.toString()
+            val display = ClaimDisplayName.resolve(store, id)
             player.sendMessage(
                 lang.get(
                     player,
-                    "name.list-entry",
-                    "target" to targetParam,
-                    "name" to displayName,
+                    "name.claim-entry",
+                    "target" to display.targetParam,
+                    "name" to escapeForMiniMessageTemplate(display.name),
                     "claimId" to id.toString(),
                     "width" to claim.width.toString(),
                     "height" to claim.height.toString(),
