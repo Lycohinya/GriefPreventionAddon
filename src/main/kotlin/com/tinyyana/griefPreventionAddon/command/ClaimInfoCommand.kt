@@ -33,7 +33,7 @@ class ClaimInfoCommand(
             return true
         }
 
-        val display = ClaimDisplayName.resolve(store, info.claimId)
+        val display = ClaimDisplayName.resolve(store, info.rootId)
         val aliasText = if (display.hasAlias) "${display.decorated} " else ""
 
         if (info.isAdminClaim) {

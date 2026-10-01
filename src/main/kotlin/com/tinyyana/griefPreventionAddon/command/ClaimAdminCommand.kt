@@ -3,12 +3,15 @@ package com.tinyyana.griefPreventionAddon.command
 import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
 import com.tinyyana.griefPreventionAddon.gui.ClaimAdminListGuiService
-import com.tinyyana.griefPreventionAddon.gui.ClaimSettingRegistry
-import com.tinyyana.griefPreventionAddon.gui.ClaimSettingsGuiService
+import com.tinyyana.griefPreventionAddon.gui.ClaimMenu
+import com.tinyyana.griefPreventionAddon.gui.MenuPage
+import com.tinyyana.griefPreventionAddon.gui.MenuState
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
-import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
-import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
+import com.tinyyana.griefPreventionAddon.policy.ClaimFlags
+import com.tinyyana.griefPreventionAddon.policy.ClaimSettingsService
+import com.tinyyana.griefPreventionAddon.policy.SetOutcome
+import com.tinyyana.griefPreventionAddon.policy.TriState
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
 import com.tinyyana.griefPreventionAddon.toggle.ClaimToggleListener
@@ -26,7 +29,10 @@ class ClaimAdminCommand(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
     private val adminGuiService: ClaimAdminListGuiService,
-    private val settingsGuiService: ClaimSettingsGuiService,
+    private val menu: ClaimMenu,
+    private val settings: ClaimSettingsService,
+    private val trust: com.tinyyana.griefPreventionAddon.trust.ClaimTrustService,
+    private val fireStatus: () -> String,
     private val teleportService: ClaimTeleportService,
     private val lang: LanguageManager,
     private val auditLogger: AuditLogger? = null,
@@ -135,25 +141,87 @@ class ClaimAdminCommand(
             return true
         }
 
-        // 6. /cadmin set <claimId> <settingKey> <true|false>
+        // 6. /cadmin set <claimId> <settingKey> <allow|deny|inherit|true|false>
+        //    true/false 是儲存值(沿用舊腳本的語意,例如 no-hostile-spawn true = 禁止生成);
+        //    allow/deny/inherit 是玩家看到的三態。範圍必須真的存在,子花域就寫子花域,不會改寫主花域。
         if (sub == "set") {
             if (args.size < 4) {
                 sender.sendMessage(lang.get(player, "admin.usage-set"))
                 return true
             }
             val id = args[1].removePrefix("#").toLongOrNull()
-            val key = args[2].lowercase()
-            val value = args[3].toBooleanStrictOrNull()
-            if (id == null || value == null) {
+            val flag = ClaimFlags.byKey(args[2])
+            val raw = args[3].lowercase()
+            val state = when (raw) {
+                "true" -> flag?.stateOf(true)
+                "false" -> flag?.stateOf(false)
+                else -> TriState.parse(raw)
+            }
+            if (id == null || flag == null || state == null) {
                 sender.sendMessage(lang.get(player, "admin.invalid-set-args"))
                 return true
             }
-            store.setBoolean(key, id, value)
-            if (key == ClaimSettingsKeys.TNT) {
-                bridge.syncClaimExplosives(id, value)
+            val result = settings.set(sender, id, flag, state)
+            when (result.outcome) {
+                SetOutcome.OK, SetOutcome.UNCHANGED ->
+                    sender.sendMessage(lang.get(player, "admin.set-success", "claimId" to id.toString(), "key" to flag.key, "value" to state.name.lowercase()))
+                SetOutcome.CLAIM_GONE -> sender.sendMessage(lang.get(player, "teleport.claim-not-found", "claimId" to id.toString()))
+                SetOutcome.UNAVAILABLE -> sender.sendMessage(lang.get(player, "flag.unavailable"))
+                SetOutcome.NO_PERMISSION -> sender.sendMessage(lang.get(player, "system.no-permission"))
             }
-            sender.sendMessage(lang.get(player, "admin.set-success", "claimId" to id.toString(), "key" to key, "value" to value.toString()))
-            auditLogger?.log(sender.name, "admin-set-setting", "claim=$id key=$key value=$value")
+            return true
+        }
+
+        // 6b. /cadmin inspect <claimId> — 診斷:這個範圍每項規則的本地值/實際值/來源、GP 原生欄位與信任。
+        //     純文字、ASCII 標記開頭,RCON 與自動化測試直接讀(玩家文字不走這裡)。
+        if (sub == "inspect") {
+            // inspect at <world> <x> <y> <z>:查座標所在的精確範圍(子花域就是子花域)
+            val claim = if (args.getOrNull(1).equals("at", ignoreCase = true) && args.size >= 6) {
+                val world = org.bukkit.Bukkit.getWorld(args[2])
+                val x = args[3].toDoubleOrNull()
+                val y = args[4].toDoubleOrNull()
+                val z = args[5].toDoubleOrNull()
+                if (world == null || x == null || y == null || z == null) null
+                else bridge.getClaimAt(org.bukkit.Location(world, x, y, z))
+            } else {
+                args.getOrNull(1)?.removePrefix("#")?.toLongOrNull()?.let { bridge.getClaim(it) }
+            }
+            if (claim == null) {
+                sender.sendMessage("[inspect] claim=${args.getOrNull(1)} missing")
+                return true
+            }
+            val lesser = claim.lesserBoundaryCorner
+            val greater = claim.greaterBoundaryCorner
+            sender.sendMessage(
+                "[inspect] claim=${claim.getID()} parent=${claim.parent?.getID() ?: "-"} owner=${claim.getOwnerID() ?: "admin"} " +
+                    "world=${lesser.world?.name} box=(${lesser.blockX},${lesser.blockZ})-(${greater.blockX},${greater.blockZ}) " +
+                    "children=${claim.children.size} explosives=${claim.areExplosivesAllowed} restrictSub=${claim.getSubclaimRestrictions()}",
+            )
+            ClaimFlags.ALL.forEach { flag ->
+                val r = settings.resolve(flag, claim)
+                sender.sendMessage(
+                    "[inspect] flag=${flag.key} local=${r.local} effective=${if (r.allowed) "allow" else "deny"} " +
+                        "source=${r.source} inherit=${if (r.inheritedAllowed) "allow" else "deny"} available=${settings.isAvailable(flag)}",
+                )
+            }
+            trust.entries(claim).forEach { e ->
+                sender.sendMessage("[inspect] trust id=${e.id} name=${e.displayName} level=${e.level?.name ?: "-"} manager=${e.manager}")
+            }
+            return true
+        }
+
+        // 6c. /cadmin fire — 診斷:火焰接管狀態與三個事件目前的 LOWEST 處理者
+        if (sub == "fire") {
+            sender.sendMessage("[fire] ${fireStatus()}")
+            listOf(
+                org.bukkit.event.block.BlockIgniteEvent.getHandlerList(),
+                org.bukkit.event.block.BlockSpreadEvent.getHandlerList(),
+                org.bukkit.event.block.BlockBurnEvent.getHandlerList(),
+            ).zip(listOf("ignite", "spread", "burn")).forEach { (handlers, name) ->
+                val lowest = handlers.registeredListeners.filter { it.priority == org.bukkit.event.EventPriority.LOWEST }
+                    .joinToString { "${it.plugin.name}:${it.listener.javaClass.simpleName.ifEmpty { "anon" }}" }
+                sender.sendMessage("[fire] $name LOWEST=[$lowest]")
+            }
             return true
         }
 
@@ -173,18 +241,7 @@ class ClaimAdminCommand(
         val claim = if (claimId != null) bridge.getClaim(claimId) else null
 
         if (claim != null && player != null) {
-            val info = ClaimInfoResult(
-                claimId = claim.id,
-                ownerName = claim.ownerName,
-                ownerUuid = claim.ownerID,
-                width = claim.width,
-                height = claim.height,
-                area = claim.area,
-                isAdminClaim = claim.isAdminClaim(),
-                isSubdivision = claim.parent != null,
-                topClaim = claim,
-            )
-            settingsGuiService.open(player, info, isAdmin = true)
+            menu.open(player, MenuState(MenuPage.OVERVIEW, claim.getID()))
             return true
         }
 
@@ -216,7 +273,7 @@ class ClaimAdminCommand(
         }
 
         val location = player.location
-        val claimId = bridge.getTopClaimIgnoringHeight(location)?.id
+        val claimId = bridge.getClaimAtIgnoringHeight(location)?.id
         @Suppress("UNCHECKED_CAST")
         val livingClass = entityClass as Class<out LivingEntity>
 
@@ -244,7 +301,7 @@ class ClaimAdminCommand(
         if (!sender.hasPermission("griefpreventionaddon.admin") && !sender.isOp) return emptyList()
 
         if (args.size == 1) {
-            val list = mutableListOf("list", "tp", "delete", "name", "set", "spawntest", "help")
+            val list = mutableListOf("list", "tp", "delete", "name", "set", "inspect", "fire", "spawntest", "help")
             val allClaims = GriefPrevention.instance.dataStore.claims ?: emptyList()
             list.addAll(allClaims.take(20).mapNotNull { it.id?.toString() })
             return list.filter { it.startsWith(args[0], ignoreCase = true) }
@@ -258,18 +315,18 @@ class ClaimAdminCommand(
                     .map { it.name.lowercase() }
                     .filter { it.startsWith(args[1], ignoreCase = true) }
             }
-            if (sub == "tp" || sub == "delete" || sub == "name" || sub == "set") {
+            if (sub == "tp" || sub == "delete" || sub == "name" || sub == "set" || sub == "inspect") {
                 val allClaims = GriefPrevention.instance.dataStore.claims ?: emptyList()
                 return allClaims.take(20).mapNotNull { it.id?.toString() }.filter { it.startsWith(args[1], ignoreCase = true) }
             }
         }
 
         if (args.size == 3 && args[0].equals("set", ignoreCase = true)) {
-            return ClaimSettingRegistry.ALL_SETTINGS.map { it.key }.filter { it.startsWith(args[2], ignoreCase = true) }
+            return ClaimFlags.ALL.map { it.key }.filter { it.startsWith(args[2], ignoreCase = true) }
         }
 
         if (args.size == 4 && args[0].equals("set", ignoreCase = true)) {
-            return listOf("true", "false").filter { it.startsWith(args[3], ignoreCase = true) }
+            return listOf("allow", "deny", "inherit", "true", "false").filter { it.startsWith(args[3], ignoreCase = true) }
         }
 
         return emptyList()

@@ -7,17 +7,26 @@ locale:
   # Whether to automatically match and render messages according to the player's Minecraft client locale
   auto-detect-client-locale: true
 
-tnt:
-  # Default claim TNT explosion block damage setting (false = protect blocks from explosions)
-  default-allowed: false
+# 主花域沒有自己設定時用的值(子花域沒設定時跟主花域)。key 就是規則 key:
+#   allow / deny = 固定值(以玩家看到的意思:no-*-spawn 的 allow = 會生成);gp = 跟 GriefPrevention 的實際設定(只給 fire-*)
+#   fire-spread 的 gp = FireSpreads && FireSpreadsInClaims;fire-burn 的 gp = FireDestroys && FireDamagesInClaims
+defaults:
+  tnt: deny
+  pvp: deny
+  member-sethome: allow
+  allow-sethome: deny
+  no-hostile-spawn: allow
+  no-raider-spawn: allow
+  no-phantom-spawn: allow
+  no-slime-spawn: allow
+  no-ambient-spawn: allow
+  fire-spread: gp
+  fire-burn: gp
 
-pvp:
-  # Default claim PvP combat setting (false = protected by GriefPrevention)
-  default-allowed: false
-
-sethome:
-  # Default guest /sethome setting (false = only claim owners and trusted players can /sethome)
-  default-allowed: false
+fire:
+  # 接管 GP 的 Ignite/Spread/Burn,讓火焰兩項規則可以按花域/子花域設定(荒野與其他引燃照 GP)。
+  # 設成 false 就完全照 GP 原樣(回退開關),火焰兩項在選單上顯示不可用。
+  takeover: true
 
 migration:
   # Automatically migrate legacy claim_toggle records from LycoServerTweaks if present

@@ -6,7 +6,8 @@ import com.tinyyana.lycoLib.menu.MenuSize
 import com.tinyyana.lycoLib.menu.NavigationSlots
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
-import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
+import com.tinyyana.griefPreventionAddon.policy.ClaimFlags
+import com.tinyyana.griefPreventionAddon.policy.ClaimSettingsService
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
 import me.ryanhamshire.GriefPrevention.Claim
 import me.ryanhamshire.GriefPrevention.GriefPrevention
@@ -18,6 +19,7 @@ import kotlin.math.ceil
 class ClaimAdminListGuiService(
     private val bridge: GriefPreventionBridge,
     private val store: ClaimSettingsStore,
+    private val settings: ClaimSettingsService,
     private val lang: LanguageManager,
     private val builder: MenuBuilder = MenuBuilder(),
 ) {
@@ -93,9 +95,10 @@ class ClaimAdminListGuiService(
             val centerX = (claim.lesserBoundaryCorner.blockX + claim.greaterBoundaryCorner.blockX) / 2
             val centerZ = (claim.lesserBoundaryCorner.blockZ + claim.greaterBoundaryCorner.blockZ) / 2
 
-            val tntAllowed = store.getBoolean(ClaimSettingsKeys.TNT, claimId)
-            val pvpAllowed = store.getBoolean(ClaimSettingsKeys.PVP, claimId)
-            val sethomeAllowed = store.isSethomeAllowed(claimId)
+            // 主花域的實際值(子花域各自的設定在點進去的花域選單裡看)
+            val tntAllowed = settings.resolve(ClaimFlags.TNT, claim).allowed
+            val pvpAllowed = settings.resolve(ClaimFlags.PVP, claim).allowed
+            val sethomeAllowed = settings.resolve(ClaimFlags.SETHOME, claim).allowed
 
             val mat = when {
                 isAdmin -> Material.BEACON

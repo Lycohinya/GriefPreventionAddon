@@ -1,5 +1,8 @@
 package com.tinyyana.griefPreventionAddon.toggle
 
+import com.tinyyana.griefPreventionAddon.policy.ClaimFlag
+import com.tinyyana.griefPreventionAddon.policy.ClaimFlags
+import com.tinyyana.griefPreventionAddon.policy.ClaimScope
 import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
 import org.bukkit.entity.Bat
 import org.bukkit.entity.CamelHusk
@@ -132,19 +135,32 @@ class MobSpawnFilterTest {
 
     // --- 完整決策 ---
 
+    private val scope1 = ClaimScope(1L, null)
+    private val childScope = ClaimScope(5L, 1L)
+
     private fun decide(
         entity: Entity,
         reason: SpawnReason = SpawnReason.NATURAL,
-        enabledKeys: Set<String> = setOf(ClaimSettingsKeys.NO_SLIME_SPAWN),
-        claimId: Long? = 1L,
-        blocked: Set<Pair<String, Long>> = setOf(ClaimSettingsKeys.NO_SLIME_SPAWN to 1L),
+        mayBlockFlags: Set<ClaimFlag> = setOf(ClaimFlags.SLIME),
+        scope: ClaimScope? = scope1,
+        blocked: Set<Pair<ClaimFlag, ClaimScope>> = setOf(ClaimFlags.SLIME to scope1),
     ): Boolean = ClaimToggleListener.shouldCancelSpawn(
         reason = reason,
         entity = entity,
-        anyEnabled = { it in enabledKeys },
-        claimIdAt = { claimId },
-        isBlocked = { key, id -> (key to id) in blocked },
+        mayBlock = { it in mayBlockFlags },
+        scopeAt = { scope },
+        isBlocked = { flag, s -> (flag to s) in blocked },
     )
+
+    @Test
+    fun `categoryFlag 與 categoryKey 一致`() {
+        assertEquals(ClaimFlags.SLIME, ClaimToggleListener.categoryFlag(mob(MagmaCube::class.java, SpawnCategory.MONSTER)))
+        assertEquals(ClaimFlags.HOSTILE, ClaimToggleListener.categoryFlag(mob(Zombie::class.java, SpawnCategory.MONSTER)))
+        assertEquals(ClaimFlags.RAIDER, ClaimToggleListener.categoryFlag(mob(Pillager::class.java, SpawnCategory.MONSTER)))
+        assertEquals(ClaimFlags.PHANTOM, ClaimToggleListener.categoryFlag(mob(Phantom::class.java, SpawnCategory.MONSTER)))
+        assertEquals(ClaimFlags.AMBIENT, ClaimToggleListener.categoryFlag(mob(Bat::class.java, SpawnCategory.AMBIENT)))
+        assertNull(ClaimToggleListener.categoryFlag(mob(Cow::class.java, SpawnCategory.ANIMAL)))
+    }
 
     @Test
     fun `關閉史萊姆生成後領地內的史萊姆與岩漿立方怪都被擋`() {
@@ -155,24 +171,92 @@ class MobSpawnFilterTest {
     }
 
     @Test
-    fun `重新開啟後恢復生成`() {
-        assertFalse(
-            decide(
-                mob(Slime::class.java, SpawnCategory.MONSTER),
-                enabledKeys = emptySet(),
-                blocked = emptySet(),
-            ),
+    fun `非自然來源永遠不攔 而且不查快篩與範圍`() {
+        var mayBlockCalls = 0
+        var scopeCalls = 0
+        val cancel = ClaimToggleListener.shouldCancelSpawn(
+            reason = SpawnReason.SPAWNER,
+            entity = mob(Slime::class.java, SpawnCategory.MONSTER),
+            mayBlock = { mayBlockCalls++; true },
+            scopeAt = { scopeCalls++; scope1 },
+            isBlocked = { _, _ -> true },
         )
+        assertFalse(cancel)
+        assertEquals(0, mayBlockCalls)
+        assertEquals(0, scopeCalls)
+    }
+
+    @Test
+    fun `全服快篩為 false 時完全不查領地範圍`() {
+        var scopeCalls = 0
+        val cancel = ClaimToggleListener.shouldCancelSpawn(
+            reason = SpawnReason.NATURAL,
+            entity = mob(Zombie::class.java, SpawnCategory.MONSTER),
+            mayBlock = { false },
+            scopeAt = { scopeCalls++; scope1 },
+            isBlocked = { _, _ -> true },
+        )
+        assertFalse(cancel)
+        assertEquals(0, scopeCalls, "mayBlock=false 時不該呼叫 scopeAt")
+    }
+
+    @Test
+    fun `歸不到類別的生物不查快篩也不查範圍`() {
+        var mayBlockCalls = 0
+        var scopeCalls = 0
+        val cancel = ClaimToggleListener.shouldCancelSpawn(
+            reason = SpawnReason.NATURAL,
+            entity = mob(Cow::class.java, SpawnCategory.ANIMAL),
+            mayBlock = { mayBlockCalls++; true },
+            scopeAt = { scopeCalls++; scope1 },
+            isBlocked = { _, _ -> true },
+        )
+        assertFalse(cancel)
+        assertEquals(0, mayBlockCalls)
+        assertEquals(0, scopeCalls)
+    }
+
+    @Test
+    fun `快篩通過後交給 isBlocked 用該範圍判定`() {
+        val slime = mob(Slime::class.java, SpawnCategory.MONSTER)
+        val blocked = setOf(ClaimFlags.SLIME to childScope)
+        // 子花域被禁、主花域沒禁:各自判斷
+        assertTrue(decide(slime, scope = childScope, blocked = blocked))
+        assertFalse(decide(slime, scope = scope1, blocked = blocked))
+    }
+
+    @Test
+    fun `isBlocked 收到的是對應類別的 flag 與 scopeAt 回傳的範圍`() {
+        var seen: Pair<ClaimFlag, ClaimScope>? = null
+        ClaimToggleListener.shouldCancelSpawn(
+            reason = SpawnReason.PATROL,
+            entity = mob(Pillager::class.java, SpawnCategory.MONSTER),
+            mayBlock = { true },
+            scopeAt = { childScope },
+            isBlocked = { f, s -> seen = f to s; false },
+        )
+        assertEquals(ClaimFlags.RAIDER to childScope, seen)
     }
 
     @Test
     fun `領地外不受影響`() {
-        assertFalse(decide(mob(MagmaCube::class.java, SpawnCategory.MONSTER), claimId = null))
+        assertFalse(decide(mob(MagmaCube::class.java, SpawnCategory.MONSTER), scope = null))
     }
 
     @Test
     fun `其他領地開了不影響本領地`() {
-        assertFalse(decide(mob(Slime::class.java, SpawnCategory.MONSTER), claimId = 2L))
+        assertFalse(decide(mob(Slime::class.java, SpawnCategory.MONSTER), scope = ClaimScope(2L, null)))
+    }
+
+    @Test
+    fun `重新開啟後恢復生成`() {
+        assertFalse(
+            decide(
+                mob(Slime::class.java, SpawnCategory.MONSTER),
+                mayBlockFlags = emptySet(),
+                blocked = emptySet(),
+            ),
+        )
     }
 
     @Test

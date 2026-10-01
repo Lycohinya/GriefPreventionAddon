@@ -21,25 +21,29 @@ softdepend: [ GriefPrevention ]
 
 commands:
   ctnt:
-    description: Toggle or query TNT explosion block damage for the current claim
+    description: Set TNT block damage for the claim or subdivision you stand in
     aliases: [ claimtnt ]
-    usage: /ctnt [on|off|status]
+    usage: /ctnt [on|off|inherit|status]
   csettings:
-    description: Open the claim settings interactive GUI menu
+    description: Open the claim menu (overview, rules, members, management)
     aliases: [ claimsettings, cmenu, claimgui ]
     usage: /csettings [claimId|alias]
   pvpinclaim:
-    description: Toggle PvP combat inside your claim
+    description: Set PvP for the claim or subdivision you stand in
     aliases: [ pvp, cpvp, pvpc ]
-    usage: /pvp
+    usage: /pvp [on|off|inherit|status]
   csethome:
-    description: Toggle whether untrusted visitors can use /sethome inside your claim
+    description: Set whether trusted members / untrusted visitors can use /sethome in the claim or subdivision you stand in
     aliases: [ claimsethome, sethomeinclaim ]
-    usage: /csethome [on|off|status]
+    usage: /csethome [trusted|visitor] [on|off|inherit|status]
   claimmobs:
-    description: Open mob spawning toggle menu (Hostile, Raider, Phantom, Slime, Ambient)
+    description: Set natural mob spawning (hostile, raider, phantom, slime, ambient) for the claim or subdivision you stand in
     aliases: [ cmob ]
-    usage: /cmob [hostile|raider|phantom|slime|ambient]
+    usage: /cmob [hostile|raider|phantom|slime|ambient] [on|off|inherit]
+  claimfire:
+    description: Set fire spread / fire block damage for the claim or subdivision you stand in
+    aliases: [ cfire ]
+    usage: /cfire [spread|burn] [on|off|inherit]
   claiminfo:
     description: Query claim information, owner, and settings at your current location
     usage: /claiminfo
@@ -64,7 +68,7 @@ commands:
     description: Global claims management panel and administrative tools
     aliases: [ cadmin, cmanage ]
     permission: griefpreventionaddon.admin
-    usage: /cadmin [list|tp|delete|name|set|help]
+    usage: /cadmin [list|tp|delete|name|set <id> <key> <allow|deny|inherit>|help]
 
 permissions:
   griefpreventionaddon.user:

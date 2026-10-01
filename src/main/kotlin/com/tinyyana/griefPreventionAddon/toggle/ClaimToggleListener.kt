@@ -1,8 +1,10 @@
 package com.tinyyana.griefPreventionAddon.toggle
 
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
-import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsKeys
-import com.tinyyana.griefPreventionAddon.storage.ClaimSettingsStore
+import com.tinyyana.griefPreventionAddon.policy.ClaimFlag
+import com.tinyyana.griefPreventionAddon.policy.ClaimFlags
+import com.tinyyana.griefPreventionAddon.policy.ClaimPolicyResolver
+import com.tinyyana.griefPreventionAddon.policy.ClaimScope
 import me.ryanhamshire.GriefPrevention.events.PreventPvPEvent
 import org.bukkit.Location
 import org.bukkit.entity.AbstractCubeMob
@@ -32,36 +34,36 @@ data class Point3D(val x: Double, val y: Double, val z: Double) {
  * 領地開關生效端(PVP 放行與生物生成攔截)。
  *
  * PVP: GP 要保護花域內玩家前會發 Cancellable 的 PreventPvPEvent，取消它=放行這次攻擊。
+ *      事件帶的 claim 是 GP 查到的精確範圍(子花域就是子花域),直接拿去解析。
  * 生物: /cmob 一類一個開關。最具體優先，只擋「自然生成類」來源(BLOCKED_REASONS)。
+ *      範圍是生成點(夜魅用錨點)忽略高度的精確範圍;子花域沒設定時跟主花域。
  */
 class ClaimToggleListener(
     private val bridge: GriefPreventionBridge,
-    private val store: ClaimSettingsStore,
+    private val resolver: ClaimPolicyResolver,
 ) : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun onPreventPvp(event: PreventPvPEvent) {
         if (event.defender !is Player) return
         val claim = event.claim ?: return
-        val top = claim.parent ?: claim
-        val id = top.id ?: return
-        if (store.isPvpAllowed(id)) {
+        if (resolver.allows(ClaimFlags.PVP, bridge.scopeOf(claim))) {
             event.isCancelled = true
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     fun onCreatureSpawn(event: CreatureSpawnEvent) {
-        // GP 是否存在的檢查在 getTopClaimIgnoringHeight 內，只有真的要查領地時才付出成本
+        // GP 是否存在的檢查在 getClaimAtIgnoringHeight 內，只有真的要查領地時才付出成本
         val cancel = shouldCancelSpawn(
             reason = event.spawnReason,
             entity = event.entity,
-            anyEnabled = store::anyEnabled,
-            claimIdAt = {
+            mayBlock = { flag -> resolver.mayResolveTo(flag, !flag.allowStored) },
+            scopeAt = {
                 val anchor = anchorLocation(event.entity, event.location)
-                bridge.getTopClaimIgnoringHeight(anchor)?.id
+                bridge.getClaimAtIgnoringHeight(anchor)?.let(bridge::scopeOf)
             },
-            isBlocked = store::isMobSpawnBlocked,
+            isBlocked = { flag, scope -> !resolver.allows(flag, scope) },
         )
         if (cancel) {
             event.isCancelled = true
@@ -121,23 +123,23 @@ class ClaimToggleListener(
         fun isNaturalSpawn(reason: CreatureSpawnEvent.SpawnReason): Boolean = reason in BLOCKED_REASONS
 
         /**
-         * /cmob 的完整判斷：來源→類別→全服快篩→領地→該領地開關。與 Bukkit 事件解耦以便測試。
+         * /cmob 的完整判斷：來源→類別→全服快篩→範圍→該範圍有效值。與 Bukkit 事件解耦以便測試。
          *
-         * [claimIdAt] 只有在真的需要查領地時才會被呼叫(夜魅錨點與 GP 查詢都在裡面)，
-         * 全服沒有任何領地開這一類時完全不查領地，維持高頻路徑 O(1)。
+         * [scopeAt] 只有在真的需要查領地時才會被呼叫(夜魅錨點與 GP 查詢都在裡面)，
+         * 全服沒有任何範圍可能禁止這一類時完全不查領地([mayBlock] 只看記憶體)。
          */
         fun shouldCancelSpawn(
             reason: CreatureSpawnEvent.SpawnReason,
             entity: Entity,
-            anyEnabled: (String) -> Boolean,
-            claimIdAt: () -> Long?,
-            isBlocked: (String, Long) -> Boolean,
+            mayBlock: (ClaimFlag) -> Boolean,
+            scopeAt: () -> ClaimScope?,
+            isBlocked: (ClaimFlag, ClaimScope) -> Boolean,
         ): Boolean {
             if (!isNaturalSpawn(reason)) return false
-            val key = categoryKey(entity) ?: return false
-            if (!anyEnabled(key)) return false
-            val claimId = claimIdAt() ?: return false
-            return isBlocked(key, claimId)
+            val flag = categoryFlag(entity) ?: return false
+            if (!mayBlock(flag)) return false
+            val scope = scopeAt() ?: return false
+            return isBlocked(flag, scope)
         }
 
         fun nearestWithinRadius(spawn: Point3D, candidates: List<Point3D>, radius: Double): Int? {
@@ -167,17 +169,20 @@ class ClaimToggleListener(
          * 立方生物要同時是敵對的才歸「史萊姆」：可養殖的被動立方生物(硫磺方塊之類)
          * 跟牛羊一樣不受 /cmob 干涉。
          */
-        fun categoryKey(entity: Entity): String? {
+        fun categoryFlag(entity: Entity): ClaimFlag? {
             val spawnCategory = entity.spawnCategory
             val hostile = entity is Enemy || spawnCategory == SpawnCategory.MONSTER
             return when {
-                entity is Raider -> ClaimSettingsKeys.NO_RAIDER_SPAWN
-                entity is Phantom -> ClaimSettingsKeys.NO_PHANTOM_SPAWN
-                entity is AbstractCubeMob && hostile -> ClaimSettingsKeys.NO_SLIME_SPAWN
-                entity is Ambient || spawnCategory == SpawnCategory.AMBIENT -> ClaimSettingsKeys.NO_AMBIENT_SPAWN
-                hostile -> ClaimSettingsKeys.NO_HOSTILE_SPAWN
+                entity is Raider -> ClaimFlags.RAIDER
+                entity is Phantom -> ClaimFlags.PHANTOM
+                entity is AbstractCubeMob && hostile -> ClaimFlags.SLIME
+                entity is Ambient || spawnCategory == SpawnCategory.AMBIENT -> ClaimFlags.AMBIENT
+                hostile -> ClaimFlags.HOSTILE
                 else -> null
             }
         }
+
+        /** 舊名稱:回傳儲存 key(診斷指令與測試用)。 */
+        fun categoryKey(entity: Entity): String? = categoryFlag(entity)?.key
     }
 }

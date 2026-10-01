@@ -3,7 +3,6 @@ package com.tinyyana.griefPreventionAddon.gui
 import com.tinyyana.lycoLib.menu.MenuSize
 import com.tinyyana.lycoLib.menu.NavigationSlots
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
-import com.tinyyana.griefPreventionAddon.integration.ClaimInfoResult
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
 import com.tinyyana.griefPreventionAddon.teleport.ClaimTeleportService
 import org.bukkit.Sound
@@ -16,7 +15,7 @@ import org.bukkit.event.inventory.InventoryDragEvent
 
 class ClaimAdminGuiListener(
     private val adminGuiService: ClaimAdminListGuiService,
-    private val settingsGuiService: ClaimSettingsGuiService,
+    private val menu: ClaimMenu,
     private val bridge: GriefPreventionBridge,
     private val teleportService: ClaimTeleportService,
     private val lang: LanguageManager,
@@ -76,20 +75,9 @@ class ClaimAdminGuiListener(
                 return
             }
 
-            // Left-Click: Open claim settings GUI in admin mode
-            val info = ClaimInfoResult(
-                claimId = claimId,
-                ownerName = claim.ownerName,
-                ownerUuid = claim.ownerID,
-                width = claim.width,
-                height = claim.height,
-                area = claim.area,
-                isAdminClaim = claim.isAdminClaim(),
-                isSubdivision = claim.parent != null,
-                topClaim = claim,
-            )
+            // Left-Click: 打開這塊地的花域選單(管理員可以看與改規則;信任照 GP 規則)
             player.playSound(player.location, Sound.UI_BUTTON_CLICK, 0.7f, 1.2f)
-            settingsGuiService.open(player, info, isAdmin = true)
+            menu.open(player, MenuState(MenuPage.OVERVIEW, claimId))
         }
     }
 
