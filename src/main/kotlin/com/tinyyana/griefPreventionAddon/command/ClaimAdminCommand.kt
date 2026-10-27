@@ -2,6 +2,7 @@ package com.tinyyana.griefPreventionAddon.command
 
 import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
 import com.tinyyana.griefPreventionAddon.audit.AuditLogger
+import com.tinyyana.griefPreventionAddon.claim.ClaimDepthService
 import com.tinyyana.griefPreventionAddon.gui.ClaimAdminListGuiService
 import com.tinyyana.griefPreventionAddon.gui.ClaimMenu
 import com.tinyyana.griefPreventionAddon.gui.MenuPage
@@ -36,7 +37,7 @@ class ClaimAdminCommand(
     private val teleportService: ClaimTeleportService,
     private val lang: LanguageManager,
     private val auditLogger: AuditLogger? = null,
-) : CommandExecutor, TabCompleter {
+): CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         val player = sender as? Player
@@ -197,6 +198,10 @@ class ClaimAdminCommand(
                     "world=${lesser.world?.name} box=(${lesser.blockX},${lesser.blockZ})-(${greater.blockX},${greater.blockZ}) " +
                     "children=${claim.children.size} explosives=${claim.areExplosivesAllowed} restrictSub=${claim.getSubclaimRestrictions()}",
             )
+            lesser.world?.let { w ->
+                val floor = ClaimDepthService.effectiveFloor(claim)
+                sender.sendMessage("[inspect] y=$floor..${w.maxHeight} lesserY=${lesser.blockY} world=[${w.minHeight},${w.maxHeight}) gap=${floor - w.minHeight}")
+            }
             ClaimFlags.ALL.forEach { flag ->
                 val r = settings.resolve(flag, claim)
                 sender.sendMessage(
@@ -207,6 +212,12 @@ class ClaimAdminCommand(
             trust.entries(claim).forEach { e ->
                 sender.sendMessage("[inspect] trust id=${e.id} name=${e.displayName} level=${e.level?.name ?: "-"} manager=${e.manager}")
             }
+            return true
+        }
+
+        // 6b2. /cadmin depth <world> <x> <z> — 診斷:這根 XZ 柱每一層是不是同一塊花域(見 ClaimDepthService.probe)
+        if (sub == "depth") {
+            runDepth(sender, args)
             return true
         }
 
@@ -247,6 +258,17 @@ class ClaimAdminCommand(
 
         sender.sendMessage(lang.get(player, "admin.help"))
         return true
+    }
+
+    private fun runDepth(sender: CommandSender, args: Array<out String>) {
+        val world = args.getOrNull(1)?.let { org.bukkit.Bukkit.getWorld(it) }
+        val x = args.getOrNull(2)?.toIntOrNull()
+        val z = args.getOrNull(3)?.toIntOrNull()
+        if (!bridge.isAvailable() || world == null || x == null || z == null) {
+            sender.sendMessage("[claimdepth] usage: /cadmin depth <world> <x> <z>")
+            return
+        }
+        ClaimDepthService.probe(sender, world, x, z)
     }
 
     /**
@@ -301,7 +323,7 @@ class ClaimAdminCommand(
         if (!sender.hasPermission("griefpreventionaddon.admin") && !sender.isOp) return emptyList()
 
         if (args.size == 1) {
-            val list = mutableListOf("list", "tp", "delete", "name", "set", "inspect", "fire", "spawntest", "help")
+            val list = mutableListOf("list", "tp", "delete", "name", "set", "inspect", "depth", "fire", "spawntest", "help")
             val allClaims = GriefPrevention.instance.dataStore.claims ?: emptyList()
             list.addAll(allClaims.take(20).mapNotNull { it.id?.toString() })
             return list.filter { it.startsWith(args[0], ignoreCase = true) }
@@ -314,6 +336,9 @@ class ClaimAdminCommand(
                     .filter { it.isSpawnable && it.entityClass?.let(LivingEntity::class.java::isAssignableFrom) == true }
                     .map { it.name.lowercase() }
                     .filter { it.startsWith(args[1], ignoreCase = true) }
+            }
+            if (sub == "depth") {
+                return org.bukkit.Bukkit.getWorlds().map { it.name }.filter { it.startsWith(args[1], ignoreCase = true) }
             }
             if (sub == "tp" || sub == "delete" || sub == "name" || sub == "set" || sub == "inspect") {
                 val allClaims = GriefPrevention.instance.dataStore.claims ?: emptyList()

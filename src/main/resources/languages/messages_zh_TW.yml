@@ -44,6 +44,7 @@ mobs:
 
 claim-info:
   wilderness: "<yellow>你目前站在野外（無主荒野）。</yellow>"
+  wilderness-below: "<yellow>你目前站在野外，{owner} 的花域從 Y {floor} 往上才受保護，地主用金鏟子重新調整一次邊界就會延伸到底</yellow>"
   admin-claim: "<color:#f9a8d4><bold>管理員花域</bold></color> <color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
   owned: "<color:#f9a8d4><bold>{owner}</bold></color><color:#f5f5f5> 的花域</color> {alias}<color:#a8a8a8>(長 {width} × 寬 {height}，共 {area} 格)</color>"
   actions: "  <click:run_command:/claimtp {claimId}><hover:show_text:'<gray>點擊瞬間傳送至此花域中心</gray>'><color:#6fd8e8><bold>[傳送至此花域]</bold></color></hover></click>   <click:run_command:/csettings {claimId}><hover:show_text:'<gray>點擊開啟花域設定選單</gray>'><color:#f9a8d4><bold>[開啟設定選單]</bold></color></hover></click>   <click:suggest_command:'/cname '><hover:show_text:'<gray>設定此花域的自訂別名 (中英皆可)</gray>'><color:#ffd166><bold>[設定別名]</bold></color></hover></click>"

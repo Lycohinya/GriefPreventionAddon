@@ -23,7 +23,9 @@ dependencies {
     testImplementation(libs.paper.api)
     testImplementation(libs.sqlite.jdbc)
     testImplementation(kotlin("test"))
-    testImplementation(libs.griefprevention.api)
+    // -PgpJar=<部署中的 GriefPrevention.jar>:用執行期同一份 GP 跑測試(例如 16.18.7 的 Claim.contains)
+    val gpJar = providers.gradleProperty("gpJar").orNull
+    if (gpJar != null) testImplementation(files(gpJar)) else testImplementation(libs.griefprevention.api)
     testImplementation("com.tinyyana:LycoLib:0.1.0")
 }
 

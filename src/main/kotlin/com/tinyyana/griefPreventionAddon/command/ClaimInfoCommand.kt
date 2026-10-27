@@ -1,6 +1,7 @@
 package com.tinyyana.griefPreventionAddon.command
 
 import com.tinyyana.griefPreventionAddon.i18n.escapeForMiniMessageTemplate
+import com.tinyyana.griefPreventionAddon.claim.ClaimDepthService
 import com.tinyyana.griefPreventionAddon.display.ClaimDisplayName
 import com.tinyyana.griefPreventionAddon.i18n.LanguageManager
 import com.tinyyana.griefPreventionAddon.integration.GriefPreventionBridge
@@ -29,7 +30,23 @@ class ClaimInfoCommand(
 
         val info = bridge.getClaimInfo(player.location)
         if (info == null) {
-            player.sendMessage(lang.get(player, "claim-info.wilderness"))
+            // 判定仍以 GP 的 3D 查詢為準;只在「XZ 在某塊花域裡、腳下低於它目前的下界」時多說一句
+            val above = bridge.getClaimAtIgnoringHeight(player.location)
+                ?.takeIf { player.location.blockY < ClaimDepthService.effectiveFloor(it) }
+            if (above == null) {
+                player.sendMessage(lang.get(player, "claim-info.wilderness"))
+            } else {
+                val top = bridge.root(above)
+                val owner = if (top.isAdminClaim()) lang.raw(player, "gui.owner-admin") ?: "Admin" else top.getOwnerName()
+                player.sendMessage(
+                    lang.get(
+                        player,
+                        "claim-info.wilderness-below",
+                        "owner" to escapeForMiniMessageTemplate(owner),
+                        "floor" to ClaimDepthService.effectiveFloor(above).toString(),
+                    ),
+                )
+            }
             return true
         }
 

@@ -68,6 +68,7 @@ Supports **Paper**, **Lecithin 26.2**, and Paper API compatible server cores wit
 | `/cadmin name <id> <alias\|clear>` | `griefpreventionaddon.admin` | Modify alias of any claim / 設定或清除任意領地別名 |
 | `/cadmin set <id> <key> <allow\|deny\|inherit\|true\|false>` | `griefpreventionaddon.admin` | Set a rule on an exact scope (true/false = stored value, kept for old scripts); unknown ids are rejected / 設定精確範圍的規則，不存在的 id 直接拒絕 |
 | `/cadmin inspect <id>` · `/cadmin inspect at <world> <x> <y> <z>` | `griefpreventionaddon.admin` | Diagnostics: every rule's local / effective / source, GP explosives flag, trust list / 診斷：每項規則的本地值、實際值、來源與信任 |
+| `/cadmin depth <world> <x> <z>` | `griefpreventionaddon.admin` | Diagnostics: is every Y of this column the same claim (`mismatch=0`) / 診斷：這根柱子每一層是不是同一塊花域 |
 | `/cadmin fire` | `griefpreventionaddon.admin` | Diagnostics: fire takeover state and LOWEST handlers / 診斷：火焰接管狀態 |
 | `/cadmin spawntest <type> [reason]` | `griefpreventionaddon.admin` | Fire a real spawn at your feet and report the filter verdict / 在腳下實際觸發一次生成並回報過濾結果 |
 
@@ -163,6 +164,7 @@ All user-facing messages, GUI items, titles, and card descriptions use MiniMessa
 ## ⬆️ Upgrade & rollback / 升級與回退
 
 - **1.0.0-rc.3 (schema v2)** runs on first start: backup `backups/data.db.bak-v1-*` (only if there is data); the LycoServerTweaks import is marked done when the DB was created by an older version (older versions re-imported on every start and could resurrect values players had turned off); boolean rows stored on subdivision ids are removed. Older versions never applied those rows, so effective behaviour is unchanged.
+- **1.0.0-rc.4** adds `/cadmin depth <world> <x> <z>`, a Y line in `/cadmin inspect`, and a `/claiminfo` hint when you stand under a claim's floor. No data change. Claims reach the world floor through GP itself: with `ExtendIntoGroundDistance` larger than the world height (Lycohinya: 400) new claims start at the floor, and an existing claim extends to the floor when its owner resizes it with the golden shovel or places a block below it.
 - **Rollback:** put the previous jar back. Older versions read the v2 table correctly for main claims (`'false'` rows count as off); subdivision overrides and fire rules are ignored. Restoring the backup is not required.
 
 ---
@@ -178,6 +180,9 @@ cd Lycohinya/LycohinyaPlugins/GriefPreventionAddon
 
 # Run full unit tests
 ./gradlew test
+
+# Run against the deployed GP jar instead of the CodeMC snapshot
+./gradlew test -PgpJar=/path/to/GriefPrevention.jar
 
 # Compile and package standalone shadowJar
 ./gradlew build
